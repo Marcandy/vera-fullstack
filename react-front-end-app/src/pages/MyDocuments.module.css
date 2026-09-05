@@ -1,0 +1,418 @@
+.myDocuments {
+    max-width: 640px;
+    margin: 24px auto;
+    padding: 0 16px;
+}
+
+.backLink {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: var(--vera-primary-dark);
+    font-size: 0.9rem;
+}
+
+.titleRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.title {
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+    color: var(--vera-primary-dark);
+}
+
+.clearedBadge {
+    color: #1a7f37;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.notClearedBadge {
+    color: #a61b1b;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.sectionTitle {
+    margin: 24px 0 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.card {
+    margin-bottom: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-color: var(--card-bg);
+}
+
+.card dl {
+    margin: 0;
+}
+
+.card dt {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.card dd {
+    margin: 2px 0 0;
+}
+
+/* one card per document: the checklist is the point of this page, so each
+   row gets room for its dates rather than being squeezed onto one line */
+.docList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.docRow {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-color: var(--card-bg);
+}
+
+.docHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.docName {
+    font-weight: 600;
+    color: var(--vera-primary-dark);
+}
+
+/* the three dates side by side: received, issued, expires */
+.docFacts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 0;
+}
+
+.fact dt {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-muted);
+}
+
+.fact dd {
+    margin: 2px 0 0;
+    font-size: 0.9rem;
+}
+
+.dayCount {
+    color: var(--text-muted);
+}
+
+.statusNote {
+    margin: 10px 0 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* the one status that stops someone working reads louder than a hint */
+.blockNote {
+    margin: 10px 0 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background-color: #fdecea;
+    color: #a61b1b;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.signedLine {
+    margin: 10px 0 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.signedName {
+    font-family: var(--font-signature);
+    font-size: 1rem;
+    color: var(--text);
+}
+
+.fileLine {
+    margin: 6px 0 0;
+    font-size: 0.85rem;
+    color: var(--text);
+    word-break: break-all;
+}
+
+.fileMeta {
+    color: var(--text-muted);
+}
+
+.rowActions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.rowActions:empty {
+    margin-top: 0;
+}
+
+.secondaryButton {
+    background-color: #ffffff;
+    color: var(--vera-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.secondaryButton:hover {
+    border-color: var(--vera-secondary);
+    color: var(--vera-secondary-dark);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.fieldLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.fieldInput,
+.fileInput {
+    font: inherit;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+.fieldInput:focus,
+.fileInput:focus {
+    border-color: var(--vera-secondary);
+    box-shadow: 0 0 0 2px var(--focus-ring);
+    outline: none;
+}
+
+.fieldHint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.dateRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* says plainly that no bytes are kept, rather than letting the file input
+   imply storage the app does not have */
+.honestyNote {
+    margin: 0;
+    padding: 10px 12px;
+    background-color: #f4f7fa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.errorNote {
+    margin: 0;
+    padding: 10px 14px;
+    background-color: #fdecea;
+    border: 1px solid #f0b9b4;
+    border-radius: 8px;
+    color: #a61b1b;
+    font-size: 0.9rem;
+}
+
+.formActions {
+    display: flex;
+    gap: 8px;
+}
+
+.primaryButton {
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.primaryButton:hover {
+    background-color: var(--btn-hover);
+}
+
+.primaryButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.cancelButton {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cancelButton:hover {
+    color: var(--text);
+}
+
+.historyList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.historyRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.historyRow:last-child {
+    border-bottom: none;
+}
+
+.historyLink {
+    font-weight: 600;
+    color: var(--vera-primary-dark);
+}
+
+.historyMeta {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.emptyState {
+    color: var(--text-muted);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+}
+
+/* phone: dates stack rather than crushing into three narrow columns */
+@media (max-width: 640px) {
+    .docFacts,
+    .dateRow {
+        grid-template-columns: 1fr;
+    }
+
+    .historyRow {
+        flex-wrap: wrap;
+    }
+
+    .historyMeta {
+        margin-left: 0;
+    }
+}
+
+/* phone first: this is read between houses, one hand, so the page is a
+   single column and every control is a full-width tap target */
+.myDocuments {
+    max-width: 560px;
+}
+
+.subtitle {
+    margin: 0 0 16px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.clearedBanner,
+.blockedBanner {
+    margin: 0 0 20px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.clearedBanner {
+    background-color: #e3f5e9;
+    color: #14532d;
+    border: 1px solid #a7d8b8;
+}
+
+.blockedBanner {
+    background-color: #fdecea;
+    color: #7f1d1d;
+    border: 1px solid #f0b9b4;
+}
+
+.expiry {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* a renewal already sent in: says plainly that it is not finished */
+.submittedNote {
+    margin: 10px 0 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background-color: #eef4fb;
+    border: 1px solid #c5d9ec;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text);
+    word-break: break-word;
+}
+
+.rowActions {
+    flex-wrap: wrap;
+}
+
+.secondaryButton,
+.primaryButton {
+    min-height: 40px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+.dateRow {
+    grid-template-columns: 1fr;
+}

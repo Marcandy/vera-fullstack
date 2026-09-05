@@ -1,0 +1,11 @@
+header {
+    background-color: var(--vera-primary);
+    color: #ffffff;
+    padding: 14px 24px;
+}
+
+header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    letter-spacing: 0.5px;
+}

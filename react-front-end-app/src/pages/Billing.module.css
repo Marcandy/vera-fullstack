@@ -1,0 +1,142 @@
+.billing {
+    max-width: 720px;
+}
+
+.billing h3 {
+    margin: 0 0 16px;
+    color: var(--vera-primary-dark);
+}
+
+.emptyState {
+    color: var(--text-muted);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+}
+
+/* section label under the page title; the billed one gets breathing room
+   above it to separate the two tables */
+.subheading {
+    margin: 24px 0 12px;
+    font-size: 1rem;
+    color: var(--vera-primary-dark);
+}
+
+.claimsTable {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.95rem;
+}
+
+.claimsTable th,
+.claimsTable td {
+    padding: 10px 16px;
+    text-align: left;
+}
+
+.claimsTable thead th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.claimsTable tbody tr {
+    border-bottom: 1px solid var(--border);
+}
+
+.claimsTable tfoot td {
+    font-weight: 600;
+    border-top: 2px solid var(--border);
+}
+
+/* the money line: brand accent, money role */
+.claimsTable tfoot .amountCol {
+    color: var(--vera-secondary-dark);
+    font-size: 1.05rem;
+}
+
+/* numeric columns read best right-aligned, decimals stacking;
+   .claimsTable prefix outweighs the th/td left-align rule above */
+.claimsTable .amountCol {
+    text-align: right;
+}
+
+.patientLink {
+    color: var(--vera-secondary-dark);
+    text-decoration: none;
+}
+
+.patientLink:hover {
+    text-decoration: underline;
+}
+
+/* action column: keep the button on one line, hard against the right edge */
+.claimsTable .actionCol {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.submitButton {
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.submitButton:hover {
+    background-color: var(--btn-hover);
+}
+
+.submitButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.errorNote {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    background-color: #fdecea;
+    border: 1px solid #f0b9b4;
+    border-radius: 8px;
+    color: #a61b1b;
+    font-size: 0.9rem;
+}
+
+/* green family: money-positive, same signal as ready-to-bill */
+.successNote {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    background-color: #e9f7ee;
+    border: 1px solid #b7e0c0;
+    border-radius: 8px;
+    color: #1a7f37;
+    font-size: 0.9rem;
+}
+
+.claimRef {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* phone: tighter cells, and the table scrolls sideways instead of
+   squeezing the columns unreadable */
+@media (max-width: 640px) {
+    .claimsTable {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .claimsTable th,
+    .claimsTable td {
+        padding: 8px 10px;
+    }
+}

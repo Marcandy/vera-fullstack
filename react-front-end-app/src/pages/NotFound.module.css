@@ -1,0 +1,23 @@
+.notFound {
+    max-width: 720px;
+}
+
+.title {
+    margin: 0 0 16px;
+    color: var(--vera-primary-dark);
+}
+
+.message {
+    color: var(--text-muted);
+    margin: 0 0 16px;
+}
+
+.homeLink {
+    color: var(--vera-secondary-dark);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.homeLink:hover {
+    text-decoration: underline;
+}

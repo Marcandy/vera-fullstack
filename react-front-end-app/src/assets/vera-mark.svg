@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 100">
+    <!-- homepage watermark: literal colors on purpose, an external image cannot read CSS vars.
+         Tune visibility via the stroke-opacity / fill-opacity values (plum 0.25, teal 0.2). -->
+    <g transform="rotate(-8 70 50)">
+        <rect x="8" y="18" width="124" height="64" rx="32" fill="none" stroke="#820263" stroke-opacity="0.25" stroke-width="6"/>
+        <path d="M 44 50 L 64 70" fill="none" stroke="#17726e" stroke-opacity="0.2" stroke-width="11" stroke-linecap="round"/>
+        <path d="M 64 70 L 102 32" fill="none" stroke="#820263" stroke-opacity="0.25" stroke-width="11" stroke-linecap="round"/>
+        <circle cx="64" cy="70" r="7" fill="#820263" fill-opacity="0.25"/>
+        <circle cx="64" cy="70" r="4" fill="#17726e" fill-opacity="0.2"/>
+    </g>
+</svg>

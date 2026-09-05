@@ -1,0 +1,135 @@
+.visitDetail {
+    max-width: 640px;
+}
+
+.backLink {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: var(--vera-secondary-dark);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.backLink:hover {
+    text-decoration: underline;
+}
+
+.headerRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.headerRow h3 {
+    margin: 0;
+    color: var(--vera-primary-dark);
+}
+
+/* demo affordance: stands in for Marcus opening his own app */
+.caregiverFlowLink {
+    margin-left: auto;
+    color: var(--vera-secondary-dark);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.caregiverFlowLink:hover {
+    text-decoration: underline;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.card h4 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: var(--vera-primary-dark);
+}
+
+.card p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.card dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 16px;
+    margin: 0;
+    font-size: 0.95rem;
+}
+
+.card dt {
+    color: var(--text-muted);
+}
+
+.card dd {
+    margin: 0;
+}
+
+/* same red family as the needs-review pill — the panel and the pill
+   are the same signal at two zoom levels */
+.missingPanel {
+    background-color: #fdecea;
+    border: 1px solid #f0b9b4;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+
+.missingPanel h4 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: #a61b1b;
+}
+
+.missingPanel ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #7a1f1a;
+}
+
+.signatureBox {
+    background-color: var(--card-bg);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+
+.signatureBox h4 {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    color: var(--vera-primary-dark);
+}
+
+.signatureName {
+    margin: 0;
+    font-style: italic;
+    font-size: 1.1rem;
+}
+
+/* phone: title, pill, and caregiver link stack instead of crowding one row */
+@media (max-width: 640px) {
+    .headerRow {
+        flex-wrap: wrap;
+    }
+}
+
+.patientLink {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+}
+
+.patientLink:hover {
+    color: var(--vera-primary-dark);
+    border-bottom-color: var(--vera-primary);
+}

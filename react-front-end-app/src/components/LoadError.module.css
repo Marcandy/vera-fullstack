@@ -1,0 +1,38 @@
+.loadError {
+    max-width: 640px;
+    margin: 24px auto;
+    padding: 16px;
+    border: 1px solid var(--status-alert);
+    border-left-width: 4px;
+    border-radius: 10px;
+    background-color: #fdecec;
+    color: #8a1216;
+}
+
+.message {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.retryButton {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border: 1px solid var(--status-alert);
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #8a1216;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.retryButton:hover {
+    background-color: var(--status-alert);
+    color: #ffffff;
+}
+
+.retryButton:focus-visible {
+    outline: 2px solid var(--status-alert);
+    outline-offset: 2px;
+}

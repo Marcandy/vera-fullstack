@@ -1,0 +1,208 @@
+.dashboard {
+    max-width: 640px;
+    margin: 24px auto;
+    padding: 0 16px;
+}
+
+.dashboard h3 {
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+    color: var(--vera-primary-dark);
+}
+
+.sectionTitle {
+    margin: 24px 0 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.actionRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+}
+
+.actionTile,
+.moneyTile {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--vera-primary);
+    border-radius: 10px;
+    background-color: var(--card-bg);
+    text-decoration: none;
+    color: inherit;
+}
+
+.moneyTile {
+    border-left-color: var(--vera-secondary);
+}
+
+.actionTile:hover,
+.moneyTile:hover,
+.pipelineTile:hover {
+    border-color: var(--vera-primary);
+    box-shadow: 0 2px 8px rgba(34, 48, 60, 0.08);
+}
+
+.actionTile:focus-visible,
+.moneyTile:focus-visible,
+.pipelineTile:focus-visible {
+    outline: 2px solid var(--vera-primary);
+    outline-offset: 2px;
+}
+
+.tileCount {
+    font-size: 1.8rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--vera-primary-dark);
+}
+
+.moneyTile .tileCount {
+    color: var(--vera-secondary-dark);
+}
+
+.tileTitle {
+    font-weight: 600;
+}
+
+.tileBlurb {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+.pipelineRow {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 12px;
+}
+
+.pipelineTile {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-color: var(--card-bg);
+    text-decoration: none;
+    color: inherit;
+}
+
+.pipelineCount {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.pipelineTitle {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}
+
+.allLink {
+    margin: 20px 0 0;
+    font-size: 0.9rem;
+}
+
+.allLink a {
+    color: var(--vera-primary-dark);
+}
+
+.emptyState {
+    color: var(--text-muted);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    line-height: 1.5;
+}
+
+.nudgePanel {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--status-alert);
+    border-radius: 10px;
+    background-color: var(--card-bg);
+}
+
+.nudgeTitle {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    color: var(--vera-primary-dark);
+}
+
+.nudgeList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nudgeRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.nudgeLink {
+    font-weight: 600;
+    color: var(--vera-primary-dark);
+}
+
+.nudgeMeta {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin-right: auto;
+}
+
+.nudgeNote {
+    margin: 12px 0 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+/* Same shape as the nudge panel, different edge colour: credentials are a
+   compliance hold rather than a missed punch, and the two should not read as
+   one queue. Reuses the nudge row classes below it, since the row is
+   genuinely the same thing: a name, a fact, a badge. */
+.credentialPanel {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--vera-secondary);
+    border-radius: 10px;
+    background-color: var(--card-bg);
+}
+
+.clearanceLine {
+    margin: 12px 0 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+/* a renewal sent in and not yet checked: an action for the office, in the
+   same row shape as the other credential lines */
+.reviewFlag {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background-color: #eef4fb;
+    border: 1px solid #c5d9ec;
+    color: #1e4d78;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}

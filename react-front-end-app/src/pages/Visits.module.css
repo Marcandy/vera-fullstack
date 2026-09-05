@@ -1,0 +1,154 @@
+.visits {
+    max-width: 640px;
+    margin: 24px auto;
+    padding: 0 16px;
+}
+
+.visits h3 {
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+    color: var(--vera-primary-dark);
+}
+
+.visitList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cardLink { text-decoration: none; color: inherit; display: block; }
+
+.emptyState {
+    color: var(--text-muted);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+}
+.headerRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sortControl {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.sortSelect {
+    font: inherit;
+    color: var(--text);
+    padding: 4px 6px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background-color: var(--card-bg);
+}
+
+.filterBar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 16px;
+}
+
+.chip {
+    font: inherit;
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background-color: var(--card-bg);
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.chip:hover {
+    border-color: var(--vera-primary);
+    color: var(--vera-primary-dark);
+}
+
+.chip:focus-visible {
+    outline: 2px solid var(--vera-primary);
+    outline-offset: 2px;
+}
+
+/* the active chip states the filter in words, never by color alone */
+.chipActive {
+    background-color: var(--vera-primary);
+    border-color: var(--vera-primary);
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.chipActive:hover {
+    color: #ffffff;
+    background-color: var(--vera-primary-dark);
+}
+
+.linkButton {
+    font: inherit;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--vera-primary-dark);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+/* search sits above the status chips: you narrow by who, then by state */
+.searchRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.searchLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.searchInput {
+    font: inherit;
+    flex: 1;
+    min-width: 0;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+.searchInput:focus {
+    border-color: var(--vera-secondary);
+    box-shadow: 0 0 0 2px var(--focus-ring);
+    outline: none;
+}
+
+/* reserves its own width so the row does not jump as the word appears and
+   disappears on every query */
+.searchStatus {
+    min-width: 6.5em;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+    .searchRow {
+        flex-wrap: wrap;
+    }
+
+    .searchInput {
+        flex-basis: 100%;
+    }
+}

@@ -1,0 +1,209 @@
+/* Marcus's surface: phone-width even on desktop, one primary action */
+.caregiverVisit {
+    max-width: 480px;
+}
+
+.backLink {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: var(--vera-secondary-dark);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.backLink:hover {
+    text-decoration: underline;
+}
+
+.roleBanner {
+    margin: 0 0 12px;
+    color: var(--vera-secondary-dark);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.headerRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.title {
+    margin: 0;
+    color: var(--vera-primary-dark);
+}
+
+.meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 4px 16px;
+    margin: 0 0 24px;
+    font-size: 0.95rem;
+}
+
+.meta dt {
+    color: var(--text-muted);
+}
+
+.meta dd {
+    margin: 0;
+}
+
+/* the one big thumb target */
+.checkInButton {
+    display: block;
+    width: 100%;
+    min-height: 56px;
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 12px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.checkInButton:hover {
+    background-color: var(--btn-hover);
+}
+
+.checkInButton:active {
+    transform: scale(0.99);
+}
+
+.checkInButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* same red family as needs-review: errors and holds are one signal system */
+.errorNote {
+    margin: 10px 0 0;
+    padding: 10px 14px;
+    background-color: #fdecea;
+    border: 1px solid #f0b9b4;
+    border-radius: 8px;
+    color: #a61b1b;
+    font-size: 0.9rem;
+}
+
+.helpNote {
+    margin: 10px 0 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.checkedInCard {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--vera-secondary);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.checkedInTime {
+    margin: 0 0 6px;
+    font-weight: 600;
+}
+
+.locationNote {
+    margin: 0 0 6px;
+    color: var(--vera-secondary-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.checkOutForm {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.fieldLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.fieldInput {
+    font: inherit;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+textarea.fieldInput {
+    resize: vertical;
+}
+
+.fieldInput:focus {
+    border-color: var(--vera-secondary);
+    box-shadow: 0 0 0 2px var(--focus-ring);
+    outline: none;
+}
+
+.checkOutButton {
+    composes: checkInButton;
+    margin-top: 8px;
+}
+
+/* amber, not red: a heads-up before acting, not a failure after */
+.warningNote {
+    margin: 4px 0 0;
+    padding: 10px 14px;
+    background-color: #fff4d6;
+    border: 1px solid #e6c96b;
+    border-radius: 8px;
+    color: #7a5b00;
+    font-size: 0.9rem;
+}
+
+/* same red family as the needs-review pill: one signal, two zoom levels */
+.supplyCard {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 4px solid #a61b1b;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.supplyTitle {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: #a61b1b;
+}
+
+.missingList {
+    margin: 0 0 8px;
+    padding-left: 20px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.closedNote {
+    margin: 0;
+    color: var(--text-muted);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+}
+
+/* standing context for this patient, read before the work starts */
+.standingConcerns {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--vera-secondary);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}

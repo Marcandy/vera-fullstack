@@ -1,0 +1,50 @@
+.visitCard {
+    position: relative;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(15, 68, 96, 0.06);
+}
+
+.visitCard h4 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+    color: var(--vera-primary-dark);
+}
+
+.visitCard dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 12px;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.visitCard dt {
+    color: var(--text-muted);
+}
+
+.visitCard dd {
+    margin: 0;
+}
+
+/* the StatusPill's root span — pinned top-right of the card */
+.visitCard > span {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+}
+
+/* phone: keep long patient names from running under the pinned pill */
+@media (max-width: 640px) {
+    .visitCard h4 {
+        padding-right: 96px;
+    }
+}
+.badgeRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}

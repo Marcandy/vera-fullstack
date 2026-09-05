@@ -1,0 +1,162 @@
+.shell {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    grid-template-rows: auto 1fr auto;   /* banner, sidebar + content, footer */
+    min-height: 100vh;
+}
+
+.sidebar {
+    background-color: var(--vera-secondary);
+    padding: 20px 14px;
+}
+
+/* blue brand banner, bleeding to the sidebar's edges */
+.banner {
+    grid-column: 1 / -1;            /* span from first to last column line */
+    background-color: var(--vera-primary);
+    color: #ffffff;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.brand {
+    margin: 0;
+    font-size: 1.4rem;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.session {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    margin-right: 16px;
+}
+
+.sessionUser {
+    font-size: 0.9rem;
+}
+
+.signOutButton {
+    background: none;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    cursor: pointer;
+}
+
+.signOutButton:hover {
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+/* hidden on desktop; the phone query turns it on */
+.menuButton {
+    display: none;
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+.logo {
+    height: 30px;
+    width: auto;
+    display: block;
+}
+
+.sidebar nav {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.navLink {
+    color: var(--chrome-text);   /* palette decides what passes on the chrome */
+    text-decoration: none;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+.navLink:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.active {
+    background-color: #ffffff;   /* white chip pops on the light chrome */
+    color: var(--vera-secondary-dark);
+    font-weight: 600;
+}
+
+.content {
+    padding: 24px 32px;
+}
+
+/* the footer's own look lives in Footer.module.css; the shell only
+   owns where it sits: full width across the grid */
+.footerSlot {
+    grid-column: 1 / -1;
+}
+
+/* tablet: same two-column layout, tighter chrome */
+@media (max-width: 900px) {
+    .shell {
+        grid-template-columns: 140px 1fr;
+    }
+
+    .content {
+        padding: 20px 16px;
+    }
+}
+
+/* phone: one column; the sidebar collapses behind the menu button */
+@media (max-width: 640px) {
+    .shell {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr auto;
+    }
+
+    .menuButton {
+        display: block;
+    }
+
+    /* the banner runs out of room next to the menu button; the name is
+       repeated on the caregiver's own page, the sign-out control is not */
+    .sessionUser {
+        display: none;
+    }
+
+    .session {
+        margin-right: 8px;
+    }
+
+    .sidebar {
+        display: none;
+        grid-row: 2;
+    }
+
+    /* toggled from Layout state when the menu button is tapped */
+    .open {
+        display: block;
+    }
+
+    .content {
+        grid-row: 3;
+    }
+
+    /* pin to the last row so the hidden sidebar's empty slot cannot
+       pull the footer up above the content */
+    .footerSlot {
+        grid-row: 4;
+    }
+}

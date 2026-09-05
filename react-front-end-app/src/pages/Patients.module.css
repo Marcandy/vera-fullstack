@@ -1,0 +1,65 @@
+.patients {
+    max-width: 640px;
+    margin: 24px auto;
+    padding: 0 16px;
+}
+
+.title {
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+    color: var(--vera-primary-dark);
+}
+
+.roster {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cardLink {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.patientCard {
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-color: var(--card-bg);
+}
+
+.cardLink:hover .patientCard {
+    border-color: var(--vera-primary);
+    box-shadow: 0 2px 8px rgba(34, 48, 60, 0.08);
+}
+
+.cardLink:focus-visible {
+    outline: 2px solid var(--vera-primary);
+    outline-offset: 2px;
+}
+
+.patientName {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    color: var(--vera-primary-dark);
+}
+
+.address,
+.phone {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.emptyState {
+    color: var(--text-muted);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+}

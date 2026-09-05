@@ -1,0 +1,66 @@
+.myVisits {
+    max-width: 640px;
+    margin: 24px auto;
+    padding: 0 16px;
+}
+
+.myVisits h3 {
+    margin: 0 0 4px;
+    font-size: 1.2rem;
+    color: var(--vera-primary-dark);
+}
+
+.subtitle {
+    margin: 0 0 16px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.visitList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cardLink { text-decoration: none; color: inherit; display: block; }
+
+.emptyState {
+    color: var(--text-muted);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    line-height: 1.5;
+}
+
+.nudge {
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--status-alert);
+    border-left-width: 4px;
+    border-radius: 8px;
+    background-color: #fdecec;
+    color: #8a1216;
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+/* section headings for the three questions this screen answers: what is on
+   today, what is held waiting on me, and everything already done */
+.sectionTitle {
+    margin: 24px 0 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.sectionNote {
+    margin: 0 0 12px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}

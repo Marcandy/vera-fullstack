@@ -1,0 +1,25 @@
+.attentionFlag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px 3px 6px;
+    border: 1px solid var(--status-alert);
+    border-radius: 6px;
+    background-color: #fdecec;
+    color: #8a1216;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background-color: var(--status-alert);
+    color: #ffffff;
+    font-size: 0.7rem;
+}

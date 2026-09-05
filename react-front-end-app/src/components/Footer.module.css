@@ -1,0 +1,29 @@
+/* visual look only; placement (grid-column / grid-row) is the parent's job */
+.footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px 16px;
+    padding: 12px 24px;
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.footerLinks {
+    display: flex;
+    gap: 16px;
+}
+
+.footerLink {
+    color: var(--vera-secondary-dark);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.footerLink:hover {
+    text-decoration: underline;
+}

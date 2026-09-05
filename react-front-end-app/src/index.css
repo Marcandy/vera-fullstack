@@ -1,0 +1,65 @@
+:root {
+    /* Vera palette; green stays reserved for money-positive statuses */
+    /* teal/blue palette, kept for easy revert:
+    --vera-primary: #175d80;
+    --vera-primary-dark: #0f4460;
+    --vera-secondary: #008487;   teal-green: nav chrome + money accents
+    */
+    /* navy/coral palette, kept for easy revert:
+    --vera-primary: #1e2b4a;
+    --vera-primary-dark: #141d33;
+    --vera-secondary: #ff6b5c;
+    --vera-secondary-dark: #c94434;
+    --vera-secondary-hover: #e85a48;
+    --focus-ring: rgba(255, 107, 92, 0.25);
+    */
+    /* plum/teal palette, kept for easy revert:
+    --vera-primary: #820263;
+    --vera-primary-dark: #5a0145;
+    --vera-secondary: #3dccc7;
+    --vera-secondary-dark: #17726e;
+    --vera-secondary-hover: #2ab5af;
+    --focus-ring: rgba(61, 204, 199, 0.4);
+    --chrome-text: #820263;   dark text on the light teal chrome
+    */
+    /* plum-primary variant, kept for easy revert:
+    --vera-primary: #820263;
+    --vera-primary-dark: #5c0146;
+    --vera-secondary: #3f7cac;
+    --vera-secondary-dark: #2c5a7e;
+    --vera-secondary-hover: #35688f;
+    --focus-ring: rgba(63, 124, 172, 0.35);
+    */
+    /*#3faca6; #2c7e79; #008487      /* sea teal: brand, primary actions */
+
+    --vera-primary: #3f7cac;         /* steel blue: brand, primary actions */
+    --vera-primary-dark: #2c5a7e;    /* hovers, emphasis, headings */
+    --vera-secondary: #820263;       /* plum: secondary UI, chrome */
+    --vera-secondary-dark: #5c0146;  /* text-safe plum for light backgrounds */
+    --vera-secondary-hover: #6d0253; /* hover state of the plum chrome */
+    --vera-accent: #3dccc7;          /* teal: highlights, sparingly */
+    --status-alert: #db222a;         /* alert red; reserved for the signal system */
+    --focus-ring: rgba(130, 2, 99, 0.3);
+    --chrome-text: #ffffff;          /* nav text on the sidebar chrome */
+    /* button skin: one place to change how actions look */
+    --btn-bg: var(--vera-primary);
+    --btn-text: #ffffff;
+    --btn-hover: var(--vera-primary-dark);
+    --font-signature: "Segoe Script", "Brush Script MT", cursive;
+    --bg: #f4f7f9;
+    --card-bg: #ffffff;
+    --border: #dfe7ec;
+    --text: #22303c;
+    --text-muted: #64748b;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+}

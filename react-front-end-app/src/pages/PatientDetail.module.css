@@ -1,0 +1,113 @@
+.patientDetail {
+    max-width: 640px;
+    margin: 24px auto;
+    padding: 0 16px;
+}
+
+.backLink {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: var(--vera-primary-dark);
+    font-size: 0.9rem;
+}
+
+.title {
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+    color: var(--vera-primary-dark);
+}
+
+.sectionTitle {
+    margin: 24px 0 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.card {
+    margin-bottom: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background-color: var(--card-bg);
+}
+
+.card h4 {
+    margin: 0 0 8px;
+    font-size: 0.95rem;
+    color: var(--vera-primary-dark);
+}
+
+.card p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.card dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 16px;
+    margin: 0;
+}
+
+.card dt {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+}
+
+.card dd {
+    margin: 0;
+    font-size: 0.92rem;
+}
+
+.note {
+    margin-top: 8px !important;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.historyList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.historyRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+}
+
+.historyLink {
+    font-weight: 600;
+    color: var(--vera-primary-dark);
+}
+
+.historyMeta {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-right: auto;
+}
+
+.historyCost {
+    font-size: 0.85rem;
+    color: var(--text);
+}
+
+.emptyState {
+    color: var(--text-muted);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+}

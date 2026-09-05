@@ -1,0 +1,43 @@
+# Repo-root ignores. The React app keeps its own .gitignore inside
+# react-front-end-app/, but gitignore patterns only apply from the file's own
+# directory downward, so anything sitting at this level has to be listed here
+# too. That includes the private notes below, which must never be committed.
+
+# Private notes and working files. Not part of the project.
+CLAUDE.local.md
+INTERVIEW-NOTES.md
+presentation.md
+presentation2.md
+tech-review.md
+reviewcode.jsx
+.claude/
+.agents/
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Java / Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db

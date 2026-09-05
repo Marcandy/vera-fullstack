@@ -1,0 +1,29 @@
+.statusPill {
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* needs review is the only status requiring admin ACTION; it alone
+   gets a solid fill so it pops against the calm pills around it */
+.needsReview { background-color: #b3261e; color: #ffffff; }
+
+/* light background + dark text pairs (WCAG-friendly contrast) */
+.readyToBill { background-color: #e3f5e9; color: #1a7f37; }
+.inProgress  { background-color: #d9f0ef; color: #0e6b66; }
+.scheduled   { background-color: #fdf3df; color: #8a5a09; }
+.billed      { background-color: #e7f0f8; color: #175d80; }
+
+/* document statuses share the same signal families:
+   signed = complete (green), pending = waiting (amber),
+   expiring = attention (light red; solid fill stays unique to needs review) */
+.signed   { background-color: #e3f5e9; color: #1a7f37; }
+.pending  { background-color: #fdf3df; color: #8a5a09; }
+.expiring { background-color: #fdecea; color: #a61b1b; }
+
+/* expired is the only document status that blocks a caregiver from working,
+   so it carries an outline the softer pills do not. The solid red fill stays
+   reserved for needs review: two solid alarms compete rather than rank. */
+.expired  { background-color: #fdecea; color: #a61b1b; border: 1px solid #d98c86; }

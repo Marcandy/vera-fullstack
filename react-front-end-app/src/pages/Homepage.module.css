@@ -1,0 +1,151 @@
+/* standalone screen: rendered outside Layout, so it owns its own frame.
+   The watermark is a background image, so it can never sit on top of
+   content or catch a click; its colors and tilt live in the asset itself */
+.page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 32px;
+    background-image: url(../assets/vera-mark.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: min(95%, 1100px);
+}
+
+.brand {
+    margin: 0;
+    font-size: 1.6rem;
+    text-align: center;
+    color: var(--vera-primary-dark);
+}
+
+.home {
+    flex: 1;
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 32px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.intro {
+    margin-bottom: 24px;
+}
+
+.title {
+    margin: 0 0 12px;
+    font-size: 1.2rem;
+    color: var(--vera-secondary-dark);
+}
+
+.lead {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.5;
+}
+
+.loginCard {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    animation: cardIn 0.4s ease-out 0.3s backwards;
+}
+
+/* no "to" block: it settles at the element's own resting styles */
+@keyframes cardIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .loginCard {
+        animation: none;
+    }
+}
+
+.loginTitle {
+    margin: 0 0 16px;
+    font-size: 1rem;
+    color: var(--vera-secondary-dark);
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.fieldLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.fieldInput {
+    font: inherit;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+.fieldInput:focus {
+    border-color: var(--vera-secondary);
+    box-shadow: 0 0 0 2px var(--focus-ring);
+    outline: none;
+}
+
+.signInButton {
+    width: 100%;
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.signInButton:hover {
+    background-color: var(--btn-hover);
+}
+
+.signInButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.demoNote {
+    margin: 12px 0 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.errorNote {
+    margin: 0 0 12px;
+    padding: 8px 10px;
+    border-left: 3px solid var(--status-alert);
+    background-color: #fdecec;
+    color: #8a1216;
+    font-size: 0.9rem;
+}
+
+
+/* phone: tighter frame, same single-column layout */
+@media (max-width: 640px) {
+    .page {
+        padding: 16px 20px;
+    }
+
+    .home {
+        padding: 24px 0;
+    }
+}

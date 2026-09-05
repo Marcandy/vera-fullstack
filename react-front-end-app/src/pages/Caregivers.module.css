@@ -1,0 +1,181 @@
+.caregivers {
+    max-width: 720px;
+}
+
+.title {
+    margin: 0 0 16px;
+    color: var(--vera-primary-dark);
+}
+
+/* add form: one quiet card, two fields, one action */
+.addForm {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.addTitle {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    color: var(--vera-primary-dark);
+}
+
+.fieldRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.fieldLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.fieldInput {
+    font: inherit;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+.fieldInput:focus {
+    border-color: var(--vera-secondary);
+    box-shadow: 0 0 0 2px var(--focus-ring);
+    outline: none;
+}
+
+/* Denise is on a desktop: compact action, not a thumb target */
+.addButton {
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.addButton:hover {
+    background-color: var(--btn-hover);
+}
+
+.addButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.errorNote {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    background-color: #fdecea;
+    border: 1px solid #f0b9b4;
+    border-radius: 8px;
+    color: #a61b1b;
+    font-size: 0.9rem;
+}
+
+.roster {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* the roster row is a link into the caregiver's record now, so the wrapper
+   carries the affordance and its owner styles it, matching Patients */
+.cardLink {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.caregiverCard {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.cardLink:hover .caregiverCard {
+    border-color: var(--vera-primary);
+    box-shadow: 0 2px 8px rgba(34, 48, 60, 0.08);
+}
+
+.cardLink:focus-visible {
+    outline: 2px solid var(--vera-primary);
+    outline-offset: 2px;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.caregiverName {
+    margin: 0 0 4px;
+    font-size: 1.05rem;
+    color: var(--vera-primary-dark);
+}
+
+.clearedBadge {
+    color: #1a7f37;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* not cleared now means a real block (something outstanding or lapsed),
+   not merely a renewal to chase, so it reads in the alert family */
+.notClearedBadge {
+    color: #a61b1b;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.caregiverPhone {
+    margin: 0 0 6px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* the one line summarizing paperwork; the documents themselves live on the
+   caregiver's own page */
+.paperwork {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.emptyState {
+    color: var(--text-muted);
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+}
+
+/* phone: form fields stack, and name + cleared badge may wrap */
+@media (max-width: 640px) {
+    .fieldRow {
+        grid-template-columns: 1fr;
+    }
+
+    .cardHeader {
+        flex-wrap: wrap;
+    }
+}
