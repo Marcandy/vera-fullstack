@@ -1,14 +1,35 @@
 # Vera API
 
-Java, Spring Boot and MySQL. Not generated yet.
+Java 21, Spring Boot 3.5, Maven and MySQL. Scaffold only: no entities,
+endpoints or data yet.
 
-Create the project here with Spring Initializr from IntelliJ, choosing Maven,
-Java 21, and the Spring Web, Spring Data JPA and MySQL Driver dependencies, so
-that `pom.xml` sits at the root of this folder.
+Open **this folder** in IntelliJ, not the repository root. The root holds the
+React application too, and IntelliJ will try to index its `node_modules` if
+pointed there.
 
-Open **this folder** in IntelliJ, not the repository root. The repository root
-holds the React application as well, and IntelliJ will try to index its
-`node_modules` if pointed there.
+## Running it
+
+Create the schema first. Hibernate creates tables, not databases:
+
+```sql
+CREATE DATABASE vera;
+```
+
+Then, from this folder:
+
+```
+./mvnw spring-boot:run
+```
+
+Credentials are read from `MYSQL_USER` and `MYSQL_PASSWORD`, defaulting to
+`root` with an empty password, so no real password is committed. Set them in
+your environment or in IntelliJ's run configuration rather than editing
+`application.properties`.
+
+The generated `contextLoads` test starts the whole Spring context, datasource
+included, so **it fails if MySQL is not running or the schema does not exist**.
+That is the test doing its job rather than a broken setup. Narrower slice tests
+that do not need a database come later.
 
 ## What replaces what
 
