@@ -37,6 +37,19 @@
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
+		<!--
+			Restarts the application when a class changes, so a code edit does
+			not need a manual stop and start. optional=true stops it leaking
+			onto the classpath of anything that depends on this project, and it
+			disables itself in a packaged jar, so it never ships to production.
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- runtime scope: the application compiles against JDBC, not against
 		     the driver, so nothing in src/main should import it -->
 		<dependency>
