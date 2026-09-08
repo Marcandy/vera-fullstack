@@ -31,6 +31,19 @@ included, so **it fails if MySQL is not running or the schema does not exist**.
 That is the test doing its job rather than a broken setup. Narrower slice tests
 that do not need a database come later.
 
+## Confirming it is up
+
+There are no endpoints yet, so a running application answers every path with
+Spring's Whitelabel error page. That is the check: `http://localhost:8080/`
+returning a 404 error page means the application started and is serving. A
+connection refused means it is not.
+
+The front end reaches the API through a Vite proxy, so in development the
+browser sees one origin: `/api/...` from `localhost:5173` is forwarded to
+`localhost:8080`. There is no cross origin request and no preflight, which
+keeps CORS a production concern to be configured deliberately for the deployed
+front end rather than switched off locally and discovered on deploy day.
+
 ## What replaces what
 
 The React app's `src/services` directory is the specification for this API.
