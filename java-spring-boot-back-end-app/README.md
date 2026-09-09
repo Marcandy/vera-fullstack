@@ -1,6 +1,6 @@
 # Vera API
 
-Java 21, Spring Boot 3.5, Maven and MySQL. Scaffold only: no entities,
+Java 21, Spring Boot 4.1, Maven and MySQL. Scaffold only: no entities,
 endpoints or data yet.
 
 Open **this folder** in IntelliJ, not the repository root. The root holds the
@@ -21,10 +21,21 @@ Then, from this folder:
 ./mvnw spring-boot:run
 ```
 
-Credentials are read from `MYSQL_USER` and `MYSQL_PASSWORD`, defaulting to
-`root` with an empty password, so no real password is committed. Set them in
-your environment or in IntelliJ's run configuration rather than editing
-`application.properties`.
+Credentials come from `MYSQL_USER` and `MYSQL_PASSWORD`. Copy the template and
+fill in your own:
+
+```
+cp .env.example .env
+```
+
+`.env` is gitignored, so a real password never reaches the repository. Spring
+loads it through `spring.config.import` in `application.properties`, and a
+`.env` file is already valid `.properties` syntax, so nothing extra is needed
+to parse it. A variable exported in the real environment overrides the file,
+which is how a deployed server supplies credentials with no file on disk.
+
+Do not put a password directly in `application.properties`: that file is
+committed, and this repository is public.
 
 The generated `contextLoads` test starts the whole Spring context, datasource
 included, so **it fails if MySQL is not running or the schema does not exist**.
