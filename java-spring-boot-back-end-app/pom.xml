@@ -3,17 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<!--
-		Spring Boot 3.5 rather than 4.x. Initializr defaults to 4 now, but 4
-		renamed the starters (spring-boot-starter-web became
-		spring-boot-starter-webmvc), so course material, tutorials and answers
-		would all be describing a different project. Matching what the class
-		teaches is worth more here than being on the newest line.
-	-->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.5.16</version>
+		<version>4.1.1</version>
 		<relativePath/>
 	</parent>
 
@@ -28,9 +21,16 @@
 	</properties>
 
 	<dependencies>
+		<!--
+			webmvc, not web. Boot 4 deprecates spring-boot-starter-web in favour
+			of this one, which names the servlet stack outright instead of
+			leaving "web" ambiguous between Spring MVC and WebFlux. The old
+			artifact still resolves, so this is a rename to follow rather than a
+			break to work around.
+		-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -58,9 +58,20 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!--
+			Boot 4 adds a test starter per slice, and Initializr now generates
+			these two in place of the single spring-boot-starter-test, which
+			still exists. Per slice means the test classpath carries what these
+			layers actually need rather than every testing library at once.
+		-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

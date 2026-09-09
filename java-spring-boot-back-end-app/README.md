@@ -1,6 +1,6 @@
 # Vera API
 
-Java 21, Spring Boot 3.5, Maven and MySQL. Scaffold only: no entities,
+Java 21, Spring Boot 4.1, Maven and MySQL. Scaffold only: no entities,
 endpoints or data yet.
 
 Open **this folder** in IntelliJ, not the repository root. The root holds the
