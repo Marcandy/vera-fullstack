@@ -5,8 +5,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
+// Named explicitly rather than left to Hibernate's naming strategy, which would
+// derive "patient" from the class. The strategy is configuration, so a version
+// or a setting could rename every table without a code change touching them.
 @Entity
+@Table(name = "patients")
 public class Patient {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
