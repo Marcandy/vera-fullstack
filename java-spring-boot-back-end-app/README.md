@@ -1,11 +1,10 @@
 # Vera API
 
-Java 21, Spring Boot 4.1, Maven and MySQL. Scaffold only: no entities,
-endpoints or data yet.
+Java 21, Spring Boot 4.1, Maven and MySQL. The REST API behind Vera's React
+front end, which reads it through a Vite proxy in development.
 
-Open **this folder** in IntelliJ, not the repository root. The root holds the
-React application too, and IntelliJ will try to index its `node_modules` if
-pointed there.
+Open this folder rather than the repository root, so that Maven imports the
+project and the React app's `node_modules` stays out of the index.
 
 ## Running it
 
@@ -44,10 +43,10 @@ that do not need a database come later.
 
 ## Confirming it is up
 
-There are no endpoints yet, so a running application answers every path with
-Spring's Whitelabel error page. That is the check: `http://localhost:8080/`
-returning a 404 error page means the application started and is serving. A
-connection refused means it is not.
+`http://localhost:8080/api/visits` returning JSON means the application started,
+connected and is serving. A connection refused means it is not, and a Whitelabel
+404 on a path that should exist means the application is up but that controller
+is not mapped.
 
 The front end reaches the API through a Vite proxy, so in development the
 browser sees one origin: `/api/...` from `localhost:5173` is forwarded to
@@ -77,6 +76,114 @@ sub-resources named for the event that causes them rather than onto CRUD:
 `locationService` is the exception and never becomes an endpoint. It is a
 device adapter rather than a repository: the device is the only authority on
 where it is.
+
+## The data model
+
+Packages go by feature, not by layer:
+
+```
+com.vera.api.patient
+com.vera.api.caregiver
+com.vera.api.visit
+```
+
+Each one holds its own entity, repository, controller and response record.
+Packaging by layer, a `models` package beside a `controllers` package, spreads a
+single change across four folders and forces every class public so the layers
+can reach one another. The unit of change here is the feature, so that is the
+unit of packaging.
+
+All three sit under `com.vera.api` because `@SpringBootApplication` roots both
+component scanning and JPA entity scanning at the package that holds it. An
+entity outside that root is invisible: no table is created, and the first
+repository referencing it fails startup with `Not a managed type`.
+
+### Fields
+
+**Patient:** `id`, `name`, `phone`, `address`, `standingConcerns` (TEXT).
+
+**Caregiver:** `id`, `name`, `phone`. Documents arrive with the compliance
+feature and are deliberately absent here.
+
+**Visit:**
+
+| Field | Notes |
+| --- | --- |
+| `id` | |
+| `patient`, `caregiver` | `@ManyToOne(fetch = FetchType.LAZY)` with `@JoinColumn` |
+| `appointmentTime` | `Instant`, not null |
+| `status`, `serviceType` | `@Enumerated(EnumType.STRING)` |
+| `estimatedCost` | `BigDecimal`, precision 10 scale 2 |
+| `checkInTime`, `checkOutTime` | nullable |
+| `assessment`, `patientConcern` | TEXT, nullable |
+| `signature` | nullable |
+
+The four evidence fields are nullable because a visit that has not happened yet
+has none of them. What a visit is missing is derived from those nulls when it
+is read, never stored as a column of its own.
+
+`EnumType.ORDINAL` would persist each constant's declaration order as an
+integer, so reordering the constants silently rewrites the meaning of every row
+already in the table. `STRING` costs a few bytes and survives a reorder.
+
+Money is `BigDecimal` because `double` cannot represent 0.10 exactly, and a
+billing record that rounds differently than the payer does is a record that
+loses arguments.
+
+No `Document` and no `Claim` yet. Both are their own tables in the ERD, and
+`ddl-auto=update` adds them later without disturbing these three.
+
+### Order of work
+
+Patient, then Caregiver, then Visit. Hibernate cannot create the Visit foreign
+keys until both referenced tables exist.
+
+Every entity needs a protected no-arg constructor. JPA instantiates entities
+reflectively and fails at startup without one.
+
+Start the application after each entity and confirm the result in SQL rather
+than trusting the Java:
+
+```sql
+SHOW COLUMNS FROM visits;
+```
+
+Two mistakes are invisible from Java and obvious here: an ordinal enum storing
+`0` and `1` where a name belongs, and an `Instant` landing in a column type
+that discards the offset.
+
+Seed data comes last, from a `CommandLineRunner` guarded by
+`if (repository.count() == 0)`, not from `data.sql`. The demo timestamps are
+offsets from the day the application starts, and static SQL cannot compute
+those.
+
+### Reads only for now
+
+- `GET /api/visits`
+- `GET /api/visits/{id}`
+- `GET /api/patients`
+- `GET /api/patients/{id}`
+- `GET /api/caregivers`
+- `GET /api/caregivers/{id}`
+
+The writes listed in the table above wait for the domain service that holds the
+evidence rule and the transition guards. Accepting a POST before that service
+exists would leave the rules in the client.
+
+### Never return an entity
+
+A controller returns a response record carrying ids **and** names, so rendering
+a list needs no second call per row. Handing Jackson an entity hands it a lazy
+proxy, which either throws or quietly loads each relation one row at a time.
+
+`VisitRepository` carries `findAllWithPeople()` and `findByIdWithPeople(id)`,
+both using `join fetch v.patient join fetch v.caregiver`. The other two
+repositories are bare `JpaRepository<T, Long>`.
+
+Write the plain `findAll()` first, set `spring.jpa.show-sql=true`, and run it.
+With `open-in-view=false` there is no open session at render time, so it throws
+`LazyInitializationException` instead of quietly firing one query per row. The
+join fetch is the fix, and the failure is worth seeing once before applying it.
 
 ## Rules that have to move here
 
