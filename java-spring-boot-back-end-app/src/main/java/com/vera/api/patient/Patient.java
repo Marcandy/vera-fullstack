@@ -13,7 +13,7 @@ public class Patient {
 
     private String name;
     private String address;
-    private String phoneNumber;
+    private String phone;
 
 
     public Long getId() {
@@ -36,11 +36,11 @@ public class Patient {
         this.address = address;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
+    public String getPhone() {
+        return phone;
     }
 }
