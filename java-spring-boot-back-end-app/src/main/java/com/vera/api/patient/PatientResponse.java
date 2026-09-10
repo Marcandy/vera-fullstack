@@ -1,14 +1,7 @@
 package com.vera.api.patient;
 
-// The wire shape, deliberately not the entity.
-//
-// Returning Patient from a controller would hand Jackson a managed object: it
-// serialises whatever relations it finds, a lazy one either throws or quietly
-// fires a query per row, and every column added later becomes public API the
-// day it is added. A record states what the client gets and nothing else.
-//
-// from() is package-private on purpose. The controller lives in this package,
-// so nothing outside the feature needs to build one.
+// The wire shape, not the entity. Returning Patient would serialise whatever
+// relations it has and make every new column public API the day it is added.
 public record PatientResponse(
         Long id,
         String name,
