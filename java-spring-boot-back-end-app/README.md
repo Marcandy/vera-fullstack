@@ -176,8 +176,8 @@ A controller returns a response record carrying ids **and** names, so rendering
 a list needs no second call per row. Handing Jackson an entity hands it a lazy
 proxy, which either throws or quietly loads each relation one row at a time.
 
-`VisitRepository` carries `findAllWithPeople()` and `findByIdWithPeople(id)`,
-both using `join fetch v.patient join fetch v.caregiver`. The other two
+`VisitRepository` carries `search(status, q, caregiverId, patientId)` and
+`findByIdWithPeople(id)`, both using `join fetch v.patient join fetch v.caregiver`. The other two
 repositories are bare `JpaRepository<T, Long>`.
 
 Write the plain `findAll()` first, set `spring.jpa.show-sql=true`, and run it.
