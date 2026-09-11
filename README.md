@@ -117,7 +117,7 @@ Automated testing was out of scope for this phase, so testing is a scripted manu
 | Add caregiver, blank name | Submit with no name | Inline error from the service; nothing added |
 | Unknown routes | Visit a bad URL or a bad visit id | 404 page inside the app shell; not-found message with a way back |
 | Dashboard tiles | Click Need review on the dashboard | Lands on the visit list filtered to needs review, chip shown active |
-| Filter deep link | Open /visits?status=billed directly, then reload | The five billed visits both times; the filter is in the URL, not in component state |
+| Filter deep link | Open /visits?status=BILLED directly, then reload | The five billed visits both times; the filter is in the URL, not in component state |
 | Search | Type a patient or caregiver name into the visit search | List narrows as you type; the URL gains ?q= and the view is shareable |
 | Search deep link | Open /visits?q=keisha directly | The box is pre-filled and the list is already narrowed |
 | Search is debounced | Type a name quickly | One request after the pause, not one per keystroke; chip clicks stay immediate |
