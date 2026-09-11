@@ -1,6 +1,10 @@
 package com.vera.api.visit;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.vera.api.visit.VisitRepository.StatusCount;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -49,6 +53,26 @@ public class VisitController {
         return visits.search(status, search, caregiverId, patientId).stream()
                 .map(VisitResponse::from)
                 .toList();
+    }
+
+    // Its own endpoint because the chips count the WHOLE collection while the
+    // list below them shows one slice of it. Counting the rows just returned
+    // would make every chip read the filtered total or zero.
+    //
+    // Mapped above /{id} so the two routes read in the order a person expects.
+    // Verified that /counts reaches this method and is not handed to
+    // getVisitById as an id.
+    @GetMapping("/counts")
+    public VisitCounts getVisitCounts() {
+        Map<VisitStatus, Long> byStatus = visits.countByStatus().stream()
+                .collect(Collectors.toMap(StatusCount::getStatus, StatusCount::getCount));
+
+        // Summed from the map rather than asked of the database again. A second
+        // query would be a second round trip and a second chance for the total
+        // and the parts to disagree.
+        long total = byStatus.values().stream().mapToLong(Long::longValue).sum();
+
+        return new VisitCounts(total, byStatus);
     }
 
     @GetMapping("/{id}")

@@ -64,6 +64,7 @@ sub-resources named for the event that causes them rather than onto CRUD:
 | --- | --- |
 | `getVisits(query)` | `GET /api/visits` |
 | `getVisitById(id)` | `GET /api/visits/{id}` |
+| `getVisitCounts()` | `GET /api/visits/counts` |
 | `checkInVisit(id)` | `POST /api/visits/{id}/check-in` |
 | `checkOutVisit(id)` | `POST /api/visits/{id}/check-out` |
 | `supplyEvidence(id)` | `POST /api/visits/{id}/evidence` |
@@ -159,8 +160,9 @@ those.
 
 ### Reads only for now
 
-- `GET /api/visits`
+- `GET /api/visits`, with optional `status`, `q`, `caregiverId` and `patientId`
 - `GET /api/visits/{id}`
+- `GET /api/visits/counts`
 - `GET /api/patients`
 - `GET /api/patients/{id}`
 - `GET /api/caregivers`
