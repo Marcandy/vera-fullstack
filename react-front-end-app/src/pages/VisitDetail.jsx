@@ -3,6 +3,7 @@ import StatusPill from '../components/StatusPill';
 import { getVisitById } from '../services/visitService';
 import { formatDateTime, formatTime, formatLocation } from '../utils/format';
 import { VISIT_STATUS } from '../utils/status';
+import { SERVICE_TYPE_LABEL } from '../utils/serviceType';
 import LoadError from '../components/LoadError';
 import { useAsyncData } from '../hooks/useAsyncData';
 import styles from './VisitDetail.module.css';
@@ -71,7 +72,7 @@ const VisitDetail = () => {
                     <dd>{visit.caregiverName}</dd>
 
                     <dt>Service</dt>
-                    <dd>{visit.serviceType}</dd>
+                    <dd>{SERVICE_TYPE_LABEL[visit.serviceType] ?? visit.serviceType}</dd>
 
                     <dt>Appointment</dt>
                     <dd>{formatDateTime(visit.appointmentTime)}</dd>

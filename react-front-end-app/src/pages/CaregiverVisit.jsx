@@ -10,7 +10,8 @@ import SignatureField from "../components/SignatureField";
 import LoadError from "../components/LoadError";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { formatDateTime, formatTime, formatLocation } from "../utils/format";
-import { VISIT_STATUS } from "../utils/status";
+import { VISIT_STATUS, VISIT_STATUS_LABEL } from "../utils/status";
+import { SERVICE_TYPE_LABEL } from "../utils/serviceType";
 import { getCurrentLocation } from "../services/locationService";
 
 // Evidence fields for the needs-review supply panel, in pipeline order.
@@ -148,7 +149,7 @@ const CaregiverVisit = () => {
                 <dd>{formatDateTime(visit.appointmentTime)}</dd>
 
                 <dt>Service</dt>
-                <dd>{visit.serviceType}</dd>
+                <dd>{SERVICE_TYPE_LABEL[visit.serviceType] ?? visit.serviceType}</dd>
 
                 {/* Where Marcus is actually going. The app knew this all along
                     and showed it only to the office, on a page he cannot reach. */}
@@ -270,7 +271,7 @@ const CaregiverVisit = () => {
 
             {![VISIT_STATUS.SCHEDULED, VISIT_STATUS.IN_PROGRESS, VISIT_STATUS.NEEDS_REVIEW].includes(visit.status) && (
                 <p className={styles.closedNote}>
-                    This visit is {visit.status}. No caregiver actions available.
+                    This visit is {(VISIT_STATUS_LABEL[visit.status] ?? visit.status).toLowerCase()}. No caregiver actions available.
                 </p>
             )}
         </section>

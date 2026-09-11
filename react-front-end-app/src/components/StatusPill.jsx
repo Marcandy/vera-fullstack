@@ -1,5 +1,9 @@
 import styles from './StatusPill.module.css'
-import { VISIT_STATUS, DOCUMENT_STATUS } from '../utils/status'
+import { VISIT_STATUS, DOCUMENT_STATUS, VISIT_STATUS_LABEL, DOCUMENT_STATUS_LABEL } from '../utils/status'
+
+// One pill renders both vocabularies, so it reads from both label maps. They
+// cannot collide: the two sets of identifiers share no value.
+const STATUS_LABELS = { ...VISIT_STATUS_LABEL, ...DOCUMENT_STATUS_LABEL }
 
 const STATUS_CLASSES = {
     [VISIT_STATUS.SCHEDULED]: styles.scheduled,
@@ -17,7 +21,7 @@ const StatusPill = ({ status }) => {
     return (
                                         //if undefined give empty give '' as class 
         <span className={`${styles.statusPill} ${STATUS_CLASSES[status] ?? ""}`}>
-           {status}
+           {STATUS_LABELS[status] ?? status}
         </span>
     )
 }

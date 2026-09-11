@@ -1,8 +1,13 @@
 import { visits } from "../data/visits";
-import { VISIT_STATUS } from "../utils/status";
+import { VISIT_STATUS, VISIT_STATUS_LABEL } from "../utils/status";
 import { countByStatus } from "../utils/visits";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+// These messages are rendered to the caregiver verbatim, so they carry the
+// label rather than the identifier. When the Java service owns these refusals
+// it will send the same sentence in the error body, and this goes away.
+const statusText = (status) => (VISIT_STATUS_LABEL[status] ?? status).toLowerCase();
 
 const findIdx = (id) => {
     const idx = visits.findIndex((visit) => visit.id === Number(id));
@@ -116,7 +121,7 @@ export const checkInVisit = async (id, location) => {
     const idx = findIdx(id)
 
     if (visits[idx].status !== VISIT_STATUS.SCHEDULED) {
-       throw new Error(`Cannot check in a visit that is ${visits[idx].status}`)
+       throw new Error(`Cannot check in a visit that is ${statusText(visits[idx].status)}`)
     }
 
     visits[idx] = {...visits[idx],
@@ -135,7 +140,7 @@ export const checkOutVisit = async (id, { assessment, signature }) => {
     const idx = findIdx(id)
 
     if (visits[idx].status !== VISIT_STATUS.IN_PROGRESS ) {
-        throw new Error (`Cannot check out a visit that is ${visits[idx].status}`);
+        throw new Error (`Cannot check out a visit that is ${statusText(visits[idx].status)}`);
     }
      
     // empty string is not evidence, null is what the frontend will read
@@ -174,7 +179,7 @@ export const supplyEvidence = async(id, {assessment, signature}) => {
     const idx = findIdx(id);
 
     if(visits[idx].status !== VISIT_STATUS.NEEDS_REVIEW) {
-        throw new Error(`Cannot supply evidence to a visit that is ${visits[idx].status}`);
+        throw new Error(`Cannot supply evidence to a visit that is ${statusText(visits[idx].status)}`);
     }
 
     // empty string is not evidence, null is for the frontend
@@ -205,7 +210,7 @@ export const submitClaim = async (id) => {
     const idx = findIdx(id);
 
     if(visits[idx].status !== VISIT_STATUS.READY_TO_BILL) {
-        throw new Error(`Cannot submit a claim for a visit that is ${visits[idx].status}`)
+        throw new Error(`Cannot submit a claim for a visit that is ${statusText(visits[idx].status)}`)
     }
 
     const updated = {
