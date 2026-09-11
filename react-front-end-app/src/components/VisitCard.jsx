@@ -1,6 +1,7 @@
 import StatusPill from './StatusPill';
 import AttentionFlag from './AttentionFlag';
 import { formatDateTime } from '../utils/format';
+import { SERVICE_TYPE_LABEL } from '../utils/serviceType';
 import styles from './VisitCard.module.css';
 
 // attention is optional and defaults to nothing: a caller that does not know
@@ -21,7 +22,7 @@ const VisitCard = ({ visit, attention = null, showCaregiver = true }) => {
                 )}
 
                 <dt>Service</dt>
-                <dd>{visit.serviceType}</dd>
+                <dd>{SERVICE_TYPE_LABEL[visit.serviceType] ?? visit.serviceType}</dd>
 
                 <dt>Appointment</dt>
                 <dd>{formatDateTime(visit.appointmentTime)}</dd>

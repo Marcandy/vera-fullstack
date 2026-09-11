@@ -3,7 +3,7 @@ import VisitCard from "../components/VisitCard";
 import LoadError from "../components/LoadError";
 import styles from "./Visits.module.css";
 import { getVisits, getVisitCounts } from "../services/visitService";
-import { VISIT_STATUS, VISIT_STATUS_LIST, parseVisitStatus } from "../utils/status";
+import { VISIT_STATUS, VISIT_STATUS_LIST, VISIT_STATUS_LABEL, parseVisitStatus } from "../utils/status";
 
 import { useNow } from "../hooks/useNow";
 import { useAsyncData } from "../hooks/useAsyncData";
@@ -24,6 +24,10 @@ const STATUS_RANK = {
 // An unrecognized status means a broken pipeline, not a real position.
 // It parks at the end; StatusPill is what fails visibly, by rendering bare.
 const RANK_UNKNOWN = Number.MAX_SAFE_INTEGER;
+
+// The status value is an identifier. These sentences are read by a person, and
+// they read mid-sentence, so the label is lowercased rather than title cased.
+const statusText = (status) => (VISIT_STATUS_LABEL[status] ?? status).toLowerCase();
 
 // Oldest appointment first: the longest-waiting visit is the most urgent one
 // in its group. ISO strings compare lexicographically, which is the reason
@@ -186,10 +190,10 @@ const Visits = () => {
                 isFiltered ? (
                     <p className={styles.emptyState}>
                         {query && activeStatus
-                            ? `No ${activeStatus} visits match "${query}".`
+                            ? `No ${statusText(activeStatus)} visits match "${query}".`
                             : query
                                 ? `No visits match "${query}".`
-                                : `No visits are ${activeStatus}.`}{" "}
+                                : `No visits are ${statusText(activeStatus)}.`}{" "}
                         <button type="button" className={styles.linkButton} onClick={clearFilters}>
                             Clear filters
                         </button>
