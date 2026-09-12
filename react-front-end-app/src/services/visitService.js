@@ -1,6 +1,6 @@
 import { visits } from "../data/visits";
 import { VISIT_STATUS, VISIT_STATUS_LABEL } from "../utils/status";
-import { countByStatus } from "../utils/visits";
+import { request } from "./apiClient";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -30,33 +30,11 @@ const findIdx = (id) => {
 // Every parameter is optional, and an absent one means no restriction, so the
 // callers that want the whole collection still call getVisits() with nothing.
 //
-// It also returns a NEW array rather than the live seed. getVisits() used to
-// hand back the module's own array, which meant a caller could sort or splice
-// the data source out from under every other screen. A real endpoint cannot
-// leak its table, and filter() already builds a copy for free.
-export const getVisits = async ({ status, q, caregiverId, patientId } = {}) => {
-    await delay(300);
-
-    // Trimmed and folded once, not per row. Blank or whitespace-only means no
-    // search at all rather than a match against the empty string.
-    const needle = q?.trim().toLowerCase();
-
-    return visits.filter((visit) => {
-        if (status && visit.status !== status) return false;
-        if (caregiverId != null && visit.caregiverId !== Number(caregiverId)) return false;
-        if (patientId != null && visit.patientId !== Number(patientId)) return false;
-
-        // Names only. Searching the assessment would quietly turn a caregiver's
-        // clinical note into a search surface, which is a different feature and
-        // a privacy decision nobody made.
-        if (needle) {
-            const names = `${visit.patientName} ${visit.caregiverName}`.toLowerCase();
-            if (!names.includes(needle)) return false;
-        }
-
-        return true;
-    });
-}
+// The filters now travel as the query string and the matching happens in SQL.
+// The signature did not have to change, which is the whole point of the
+// boundary: no page knows this stopped being an array.
+export const getVisits = async (filters = {}, { signal } = {}) =>
+    request("/visits", { signal, params: filters });
 
 // GET /api/visits/counts.
 //
@@ -66,14 +44,8 @@ export const getVisits = async ({ status, q, caregiverId, patientId } = {}) => {
 // counting the rows that came back would make every chip read either the
 // filtered total or zero. Real APIs answer this with facet counts or an
 // aggregate endpoint, never from the page they just returned.
-export const getVisitCounts = async () => {
-    await delay(300);
-
-    return {
-        total: visits.length,
-        byStatus: countByStatus(visits),
-    };
-}
+export const getVisitCounts = async ({ signal } = {}) =>
+    request("/visits/counts", { signal });
 
 // Filtering by id, never by name: names collide and change, ids do not.
 // This is GET /api/visits?caregiverId=1, and it delegates rather than
@@ -82,7 +54,7 @@ export const getVisitCounts = async () => {
 // not in query: an admin reads any caregiver's visits this way, while a
 // caregiver reading their own becomes GET /api/visits/mine, where the server
 // takes the id from the principal and never from a parameter.
-export const getVisitsByCaregiver = async (caregiverId) => {
+export const getVisitsByCaregiver = async (caregiverId, options) => {
     // Required, and it fails rather than defaulting. In getVisits an absent
     // filter means "no restriction", which is right for an optional parameter
     // and catastrophic for a required one: without this guard, asking for a
@@ -92,22 +64,28 @@ export const getVisitsByCaregiver = async (caregiverId) => {
         throw new Error("A caregiver id is required");
     }
 
-    return getVisits({ caregiverId });
+    return getVisits({ caregiverId }, options);
 }
 
 // GET /api/visits?patientId=1, the patient's care history.
-export const getVisitsByPatient = async (patientId) => {
+export const getVisitsByPatient = async (patientId, options) => {
     if (patientId == null || patientId === "") {
         throw new Error("A patient id is required");
     }
 
-    return getVisits({ patientId });
+    return getVisits({ patientId }, options);
 }
 
-export const getVisitById = async (id) => {
-    await delay(300);
-
-    return visits.find((visit) => visit.id === Number(id));
+export const getVisitById = async (id, { signal } = {}) => {
+    try {
+        return await request(`/visits/${id}`, { signal });
+    } catch (error) {
+        // 404 is an answer, not a failure. VisitDetail renders not-found for a
+        // falsy value and a retryable error when this throws, and those are
+        // replies to two different questions.
+        if (error.status === 404) return undefined;
+        throw error;
+    }
 }
 
 // The caller supplies the location because the device is the only authority
