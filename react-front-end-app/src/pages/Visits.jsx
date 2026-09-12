@@ -181,7 +181,7 @@ const Visits = () => {
                         aria-pressed={activeStatus === status}
                         onClick={() => setParam("status", status)}
                     >
-                        {status}{counts && ` (${counts.byStatus[status] ?? 0})`}
+                        {VISIT_STATUS_LABEL[status] ?? status}{counts && ` (${counts.byStatus[status] ?? 0})`}
                     </button>
                 ))}
             </div>

@@ -64,6 +64,7 @@ sub-resources named for the event that causes them rather than onto CRUD:
 | --- | --- |
 | `getVisits(query)` | `GET /api/visits` |
 | `getVisitById(id)` | `GET /api/visits/{id}` |
+| `getVisitCounts()` | `GET /api/visits/counts` |
 | `checkInVisit(id)` | `POST /api/visits/{id}/check-in` |
 | `checkOutVisit(id)` | `POST /api/visits/{id}/check-out` |
 | `supplyEvidence(id)` | `POST /api/visits/{id}/evidence` |
@@ -159,8 +160,9 @@ those.
 
 ### Reads only for now
 
-- `GET /api/visits`
+- `GET /api/visits`, with optional `status`, `q`, `caregiverId` and `patientId`
 - `GET /api/visits/{id}`
+- `GET /api/visits/counts`
 - `GET /api/patients`
 - `GET /api/patients/{id}`
 - `GET /api/caregivers`
@@ -176,8 +178,8 @@ A controller returns a response record carrying ids **and** names, so rendering
 a list needs no second call per row. Handing Jackson an entity hands it a lazy
 proxy, which either throws or quietly loads each relation one row at a time.
 
-`VisitRepository` carries `findAllWithPeople()` and `findByIdWithPeople(id)`,
-both using `join fetch v.patient join fetch v.caregiver`. The other two
+`VisitRepository` carries `search(status, q, caregiverId, patientId)` and
+`findByIdWithPeople(id)`, both using `join fetch v.patient join fetch v.caregiver`. The other two
 repositories are bare `JpaRepository<T, Long>`.
 
 Write the plain `findAll()` first, set `spring.jpa.show-sql=true`, and run it.
