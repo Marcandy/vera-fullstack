@@ -1,9 +1,15 @@
 // Shared display formatters. Store ISO strings, format at render.
 
+// Guarded like formatTime and formatDate below, and for the same reason: an
+// absent value rendered the literal string "Invalid Date", which reads as a
+// bug rather than as an absence. Reached now that claimId and submittedAt
+// arrive from the API without them, since CLAIMS is not built yet.
 export const formatDateTime = (isoString) =>
-    new Date(isoString).toLocaleString("en-US", {
-        month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
-    });
+    isoString
+        ? new Date(isoString).toLocaleString("en-US", {
+            month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+        })
+        : "—";
 
 export const formatTime = (isoString) =>
     isoString
