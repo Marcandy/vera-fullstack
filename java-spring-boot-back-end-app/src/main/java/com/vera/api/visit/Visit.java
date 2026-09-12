@@ -6,6 +6,9 @@ import java.time.Instant;
 import com.vera.api.caregiver.Caregiver;
 import com.vera.api.patient.Patient;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -41,10 +44,15 @@ public class Visit {
 
     // STRING, never ORDINAL: ordinal stores declaration order, so reordering the
     // constants silently rewrites every row already in the table.
+    //
+    // VARCHAR opts out of the native MySQL ENUM column, which would pin the five
+    // values into the schema and make #16's cancelled status an ALTER TABLE.
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private VisitStatus status;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private ServiceType serviceType;
 
     // BigDecimal because double cannot represent 0.10 exactly, and a billing

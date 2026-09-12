@@ -113,7 +113,7 @@ feature and are deliberately absent here.
 | `id` | |
 | `patient`, `caregiver` | `@ManyToOne(fetch = FetchType.LAZY)` with `@JoinColumn` |
 | `appointmentTime` | `Instant`, not null |
-| `status`, `serviceType` | `@Enumerated(EnumType.STRING)` |
+| `status`, `serviceType` | `@Enumerated(EnumType.STRING)` plus `@JdbcTypeCode(SqlTypes.VARCHAR)` |
 | `estimatedCost` | `BigDecimal`, precision 10 scale 2 |
 | `checkInTime`, `checkOutTime` | nullable |
 | `assessment`, `patientConcern` | TEXT, nullable |
@@ -126,6 +126,13 @@ is read, never stored as a column of its own.
 `EnumType.ORDINAL` would persist each constant's declaration order as an
 integer, so reordering the constants silently rewrites the meaning of every row
 already in the table. `STRING` costs a few bytes and survives a reorder.
+
+`@JdbcTypeCode(SqlTypes.VARCHAR)` opts out of the native MySQL `ENUM` column
+Hibernate builds by default. Stored values are identical; what changes is the
+cost of a sixth constant. `ENUM` pins the permitted values into the schema and
+`ddl-auto=update` will not retype a column, so #16's cancelled status would
+fail at the first insert. The tradeoff: the database no longer rejects a value
+the application did not write, and `data.sql` inserts these as raw strings.
 
 Money is `BigDecimal` because `double` cannot represent 0.10 exactly, and a
 billing record that rounds differently than the payer does is a record that
