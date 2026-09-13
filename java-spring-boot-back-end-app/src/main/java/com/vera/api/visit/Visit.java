@@ -65,6 +65,17 @@ public class Visit {
     private Instant checkInTime;
     private Instant checkOutTime;
 
+    // Where the device said it was at check-in. Metadata, never evidence: a
+    // refused fix still bills. Boxed, because 0.0 and "never captured" are
+    // different facts and a primitive cannot tell them apart.
+    private Double checkInLatitude;
+    private Double checkInLongitude;
+    private Double checkInAccuracy;
+
+    // Why there are no coordinates: denied, unavailable, timeout, unsupported.
+    // Set only when the device was asked and could not answer.
+    private String checkInLocationReason;
+
     @Column(length = 2000)
     private String assessment;
 
@@ -141,6 +152,38 @@ public class Visit {
 
     public void setCheckOutTime(Instant checkOutTime) {
         this.checkOutTime = checkOutTime;
+    }
+
+    public Double getCheckInLatitude() {
+        return checkInLatitude;
+    }
+
+    public void setCheckInLatitude(Double checkInLatitude) {
+        this.checkInLatitude = checkInLatitude;
+    }
+
+    public Double getCheckInLongitude() {
+        return checkInLongitude;
+    }
+
+    public void setCheckInLongitude(Double checkInLongitude) {
+        this.checkInLongitude = checkInLongitude;
+    }
+
+    public Double getCheckInAccuracy() {
+        return checkInAccuracy;
+    }
+
+    public void setCheckInAccuracy(Double checkInAccuracy) {
+        this.checkInAccuracy = checkInAccuracy;
+    }
+
+    public String getCheckInLocationReason() {
+        return checkInLocationReason;
+    }
+
+    public void setCheckInLocationReason(String checkInLocationReason) {
+        this.checkInLocationReason = checkInLocationReason;
     }
 
     public String getAssessment() {
