@@ -1,8 +1,9 @@
 -- Demo data, loaded on startup by Spring after Hibernate has created the tables.
 --
--- INSERT IGNORE with explicit ids makes this safe to run on every start: a row
--- whose id already exists is skipped rather than duplicated, and the ids stay
--- fixed so the README test table and the demo script keep matching.
+-- Explicit ids throughout, so the README test table and the demo script keep
+-- matching. People are INSERT IGNORE: already there means leave them alone.
+-- Visits are deleted and rewritten, because their times are relative and
+-- INSERT IGNORE would evaluate them once and never again.
 --
 -- TIMES ARE STORED UTC, which is what the application reads and writes.
 -- Philadelphia runs four hours behind UTC on daylight time, so a 2:00 PM visit
@@ -34,8 +35,16 @@ INSERT IGNORE INTO caregivers (id, name, phone) VALUES
 (4, 'Luis Rivera',     '215-555-0163'),
 (5, 'Angela Brooks',   '215-555-0129');
 
+-- Rewritten every start. The offsets below are evaluated at INSERT time, so
+-- skipping the insert freezes the demo day on whatever day the rows first
+-- landed. Deleting first is what keeps today actually today.
+--
+-- The cost: a check-in written through the API does not survive a restart. Set
+-- spring.sql.init.mode=never while developing a write if that gets in the way.
+DELETE FROM visits;
+
 -- Yesterday's work: two visits missing evidence, three ready to bill, one billed.
-INSERT IGNORE INTO visits
+INSERT INTO visits
     (id, patient_id, caregiver_id, appointment_time, status, service_type, estimated_cost,
      check_in_time, check_out_time, assessment, signature, patient_concern) VALUES
 
