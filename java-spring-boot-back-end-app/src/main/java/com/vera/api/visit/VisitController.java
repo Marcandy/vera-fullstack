@@ -10,20 +10,24 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-// Reads only. Check in, check out and scheduling are writes that need the
-// domain service holding the evidence rule, so they are not here yet.
+// Reads today, writes next. Check in and check out go through VisitService,
+// which holds the transition guards and the evidence rule; scheduling is #22.
 @RestController
 @RequestMapping("/api/visits")
 public class VisitController {
 
     private final VisitRepository visits;
+    private final VisitService visitService;
 
-    VisitController(VisitRepository visits) {
+    VisitController(VisitRepository visits, VisitService visitService) {
         this.visits = visits;
+        this.visitService = visitService;
     }
 
     // Every parameter is optional, and an absent one means no restriction, so the
@@ -81,5 +85,24 @@ public class VisitController {
                 .map(VisitResponse::from)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // required = false on both: a caregiver who denied the location prompt still
+    // checks in, and one with nothing written still checks out, into needs
+    // review. A missing body arrives as null, which both service methods accept.
+    //
+    // 200 and not 201: nothing was created, an existing resource changed state.
+    // No rules here. If a status check starts creeping into this file it belongs
+    // one layer down.
+    @PostMapping("/{id}/check-in")
+    public VisitResponse checkIn(@PathVariable Long id,
+            @RequestBody(required = false) CheckInRequest location) {
+        return VisitResponse.from(visitService.checkIn(id, location));
+    }
+
+    @PostMapping("/{id}/check-out")
+    public VisitResponse checkOut(@PathVariable Long id,
+            @RequestBody(required = false) EvidenceRequest evidence) {
+        return VisitResponse.from(visitService.checkOut(id, evidence));
     }
 }
