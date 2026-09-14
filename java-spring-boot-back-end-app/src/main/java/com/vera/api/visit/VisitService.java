@@ -1,7 +1,16 @@
 package com.vera.api.visit;
 
+import java.time.Instant;
+
+import com.vera.api.IllegalTransitionException;
+import com.vera.api.NotFoundException;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 // The rules live here, not in the controller and not in the entity. They ran in
 // the browser until now, which meant they were suggestions.
+@Service
 public class VisitService {
 
     private final VisitRepository visits;
@@ -10,42 +19,81 @@ public class VisitService {
         this.visits = visits;
     }
 
-    // TODO(#18): checkIn(Long id, CheckInRequest location), @Transactional
-    //   1. load, or throw new NotFoundException("Visit " + id + " not found")
-    //   2. not SCHEDULED -> new IllegalTransitionException(
-    //        "Cannot check in a visit that is " + status.label())
-    //   3. checkInTime = Instant.now(), because a time the caller can author is
-    //      not evidence
-    //   4. copy the location, tolerating a null request
-    //   5. status = IN_PROGRESS
-    //
-    // Step 4: null writes nothing, available true writes the three coordinates,
-    // available false writes the reason. Never both, or the UI reports a
-    // position for a fix that was refused.
+    @Transactional
+    public Visit checkIn(Long id, CheckInRequest location) {
+        Visit visit = load(id);
 
-    // TODO(#19): checkOut(Long id, EvidenceRequest evidence), @Transactional
-    //   1. load, or throw NotFoundException
-    //   2. not IN_PROGRESS -> IllegalTransitionException(
-    //        "Cannot check out a visit that is " + status.label())
-    //   3. checkOutTime = Instant.now()
-    //   4. assessment and signature through blankToNull
-    //   5. status = hasCompleteEvidence(visit) ? READY_TO_BILL : NEEDS_REVIEW
+        if (visit.getStatus() != VisitStatus.SCHEDULED) {
+            throw new IllegalTransitionException(
+                    "Cannot check in a visit that is " + visit.getStatus().label());
+        }
 
-    // TODO(#18): hasCompleteEvidence(Visit) -> checkInTime, checkOutTime,
-    // assessment and signature all present. A method, not four inline
-    // conditions, because #20 asks the same question. Location is not one of
-    // them: it never blocks billing.
+        // The server stamps the clock: a time the caller could author is not
+        // evidence. Location is the exception, because the device is the only
+        // authority on where it is, and it never blocks billing.
+        visit.setCheckInTime(Instant.now());
+        applyLocation(visit, location);
+        visit.setStatus(VisitStatus.IN_PROGRESS);
 
-    // TODO(#19): blankToNull(String) -> "   " stores as NULL. The client reads
-    // null to mean missing and would treat "" as supplied.
+        return visit;
+    }
 
-    // TODO: @Transactional needs an import and this class needs @Service. Left
-    // off so an empty bean does not sit in the context.
+    @Transactional
+    public Visit checkOut(Long id, EvidenceRequest evidence) {
+        Visit visit = load(id);
 
-    // DESIGN QUESTION, and it decides the return type above.
-    // open-in-view is false, so findById hands back lazy proxies and the
-    // transaction closes when the method returns, before the controller reads
-    // getPatient().getName(). Two answers: load with findByIdWithPeople and
-    // return Visit, or build the VisitResponse in here while the session is
-    // still open. Use the same one in both methods and in #20.
+        if (visit.getStatus() != VisitStatus.IN_PROGRESS) {
+            throw new IllegalTransitionException(
+                    "Cannot check out a visit that is " + visit.getStatus().label());
+        }
+
+        String assessment = evidence == null ? null : evidence.assessment();
+        String signature = evidence == null ? null : evidence.signature();
+
+        visit.setCheckOutTime(Instant.now());
+        visit.setAssessment(blankToNull(assessment));
+        visit.setSignature(blankToNull(signature));
+        visit.setStatus(hasCompleteEvidence(visit)
+                ? VisitStatus.READY_TO_BILL
+                : VisitStatus.NEEDS_REVIEW);
+
+        return visit;
+    }
+
+    // findByIdWithPeople and not findById: open-in-view is false, so the two
+    // relations have to be loaded inside this transaction or the controller
+    // throws when it maps the response.
+    private Visit load(Long id) {
+        return visits.findByIdWithPeople(id)
+                .orElseThrow(() -> new NotFoundException("Visit " + id + " not found"));
+    }
+
+    // Coordinates or a reason, never both, or the UI reports a position for a
+    // fix that was refused.
+    private static void applyLocation(Visit visit, CheckInRequest location) {
+        if (location == null) {
+            return;
+        }
+
+        if (Boolean.TRUE.equals(location.available())) {
+            visit.setCheckInLatitude(location.latitude());
+            visit.setCheckInLongitude(location.longitude());
+            visit.setCheckInAccuracy(location.accuracy());
+        } else {
+            visit.setCheckInLocationReason(location.reason());
+        }
+    }
+
+    // The evidence rule. All four, no override, and location is not one of them.
+    private static boolean hasCompleteEvidence(Visit visit) {
+        return visit.getCheckInTime() != null
+                && visit.getCheckOutTime() != null
+                && visit.getAssessment() != null
+                && visit.getSignature() != null;
+    }
+
+    // Empty is not evidence, and the client reads null to mean missing.
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
 }
