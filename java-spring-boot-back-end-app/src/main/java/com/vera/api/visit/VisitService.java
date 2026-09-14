@@ -60,6 +60,34 @@ public class VisitService {
         return visit;
     }
 
+    @Transactional
+    public Visit supplyEvidence(Long id, EvidenceRequest evidence) {
+        Visit visit = load(id);
+
+        if (visit.getStatus() != VisitStatus.NEEDS_REVIEW) {
+            throw new IllegalTransitionException(
+                    "Cannot supply evidence to a visit that is " + visit.getStatus().label());
+        }
+
+        String assessment = blankToNull(evidence == null ? null : evidence.assessment());
+        String signature = blankToNull(evidence == null ? null : evidence.signature());
+
+        // Supplying a missing field must not erase evidence already recorded.
+        if (assessment != null) {
+            visit.setAssessment(assessment);
+        }
+
+        if (signature != null) {
+            visit.setSignature(signature);
+        }
+
+        visit.setStatus(hasCompleteEvidence(visit)
+                ? VisitStatus.READY_TO_BILL
+                : VisitStatus.NEEDS_REVIEW);
+
+        return visit;
+    }
+
     // findByIdWithPeople and not findById: open-in-view is false, so the two
     // relations have to be loaded inside this transaction or the controller
     // throws when it maps the response.
