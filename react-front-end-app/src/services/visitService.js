@@ -109,36 +109,9 @@ export const checkOutVisit = async (id, evidence) =>
     post(`/visits/${id}/check-out`, evidence);
 
 
-export const supplyEvidence = async(id, {assessment, signature}) => {
-    await delay(300)
-
-    const idx = findIdx(id);
-
-    if(visits[idx].status !== VISIT_STATUS.NEEDS_REVIEW) {
-        throw new Error(`Cannot supply evidence to a visit that is ${statusText(visits[idx].status)}`);
-    }
-
-    // empty string is not evidence, null is for the frontend
-    const cleanAssessment = assessment?.trim() ? assessment.trim() : null;
-    const cleanSignature = signature?.trim() ? signature.trim() : null;
-
-    // merge, supplying nothing keeps what exist
-    const updated = {
-        ...visits[idx],
-        assessment: cleanAssessment ?? visits[idx].assessment,
-        signature: cleanSignature ?? visits[idx].signature
-    }
-
-    // same evidence as checkout
-    const evidenceComplete = 
-        updated.checkInTime && updated.checkOutTime &&
-        updated.assessment && updated.signature;
-
-    updated.status = evidenceComplete ? VISIT_STATUS.READY_TO_BILL : VISIT_STATUS.NEEDS_REVIEW;
-
-    visits[idx] = updated;
-    return updated
-}
+// Issue #20: the Java service owns the evidence merge and resulting status.
+export const supplyEvidence = async (id, evidence) =>
+    post(`/visits/${id}/evidence`, evidence);
 
 export const submitClaim = async (id) => {
     await delay(700);

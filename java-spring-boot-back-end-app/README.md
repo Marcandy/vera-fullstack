@@ -178,10 +178,16 @@ those.
 - `GET /api/caregivers/{id}`
 - `POST /api/visits/{id}/check-in`, optional body, the server stamps the time
 - `POST /api/visits/{id}/check-out`, optional `assessment` and `signature`
+- `POST /api/visits/{id}/evidence`, optional `assessment` and `signature`
 
-Both writes go through `VisitService`, which holds the transition guards and
+All three writes go through `VisitService`, which holds the transition guards and
 the four field evidence rule. The controller calls the service and maps the
 result; no rule lives in it.
+
+Supplying evidence is allowed only for a visit in `NEEDS_REVIEW`. Nonblank
+fields are trimmed and saved; blank or omitted fields preserve existing
+evidence. Neither timestamp changes. The visit becomes `READY_TO_BILL` only
+when all four evidence fields exist, and the endpoint returns the updated visit.
 
 ### The error contract
 

@@ -16,8 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-// Reads today, writes next. Check in and check out go through VisitService,
-// which holds the transition guards and the evidence rule; scheduling is #22.
+// VisitService owns write transitions and the evidence rule; scheduling is #22.
 @RestController
 @RequestMapping("/api/visits")
 public class VisitController {
@@ -104,5 +103,11 @@ public class VisitController {
     public VisitResponse checkOut(@PathVariable Long id,
             @RequestBody(required = false) EvidenceRequest evidence) {
         return VisitResponse.from(visitService.checkOut(id, evidence));
+    }
+
+    @PostMapping("/{id}/evidence")
+    public VisitResponse supplyEvidence(@PathVariable Long id,
+            @RequestBody(required = false) EvidenceRequest evidence) {
+        return VisitResponse.from(visitService.supplyEvidence(id, evidence));
     }
 }
