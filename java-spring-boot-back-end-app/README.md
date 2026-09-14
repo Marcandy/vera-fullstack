@@ -114,6 +114,8 @@ feature and are deliberately absent here.
 | `patient`, `caregiver` | `@ManyToOne(fetch = FetchType.LAZY)` with `@JoinColumn` |
 | `appointmentTime` | `Instant`, not null |
 | `status`, `serviceType` | `@Enumerated(EnumType.STRING)` plus `@JdbcTypeCode(SqlTypes.VARCHAR)` |
+| `checkInLatitude`, `checkInLongitude`, `checkInAccuracy` | `Double`, nullable |
+| `checkInLocationReason` | nullable; set only when the device was asked and could not answer |
 | `estimatedCost` | `BigDecimal`, precision 10 scale 2 |
 | `checkInTime`, `checkOutTime` | nullable |
 | `assessment`, `patientConcern` | TEXT, nullable |
@@ -165,7 +167,7 @@ Seed data comes last, from a `CommandLineRunner` guarded by
 offsets from the day the application starts, and static SQL cannot compute
 those.
 
-### Reads only for now
+### Live endpoints
 
 - `GET /api/visits`, with optional `status`, `q`, `caregiverId` and `patientId`
 - `GET /api/visits/{id}`
@@ -174,10 +176,27 @@ those.
 - `GET /api/patients/{id}`
 - `GET /api/caregivers`
 - `GET /api/caregivers/{id}`
+- `POST /api/visits/{id}/check-in`, optional body, the server stamps the time
+- `POST /api/visits/{id}/check-out`, optional `assessment` and `signature`
 
-The writes listed in the table above wait for the domain service that holds the
-evidence rule and the transition guards. Accepting a POST before that service
-exists would leave the rules in the client.
+Both writes go through `VisitService`, which holds the transition guards and
+the four field evidence rule. The controller calls the service and maps the
+result; no rule lives in it.
+
+### The error contract
+
+A refused transition is a **409** carrying `{"message": "..."}`, produced by
+one `@RestControllerAdvice`. The React client renders `message` verbatim, so
+the sentence the server sends is the sentence a caregiver reads:
+
+```json
+{ "message": "Cannot check in a visit that is billed" }
+```
+
+409 rather than 400: the request is well formed, and it is the visit's current
+state that makes it impossible. `ResponseStatusException` was rejected because
+its default body is not a shape you control, and DevTools changes what it
+contains between development and production.
 
 ### Never return an entity
 
