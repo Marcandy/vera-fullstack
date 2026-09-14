@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 // Ids AND names, so rendering a list needs no second call per row. This is the
 // shape the client already reads; the entity behind it is not.
@@ -26,6 +27,8 @@ public record VisitResponse(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
         Instant checkInTime,
 
+        CheckInLocation checkInLocation,
+
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
         Instant checkOutTime,
 
@@ -45,9 +48,44 @@ public record VisitResponse(
                 visit.getServiceType(),
                 visit.getEstimatedCost(),
                 visit.getCheckInTime(),
+                CheckInLocation.from(visit),
                 visit.getCheckOutTime(),
                 visit.getAssessment(),
                 visit.getPatientConcern(),
                 visit.getSignature());
+    }
+
+    // Four flat columns become the nested object the browser sent, so what the
+    // client reads back is the shape locationService produced.
+    //
+    // NON_NULL is on THIS record and must never move up to VisitResponse:
+    // CaregiverVisit builds its missing evidence list with `visit[field] ===
+    // null`, and undefined === null is false, so dropping null keys would empty
+    // that list silently on exactly the visits that need it.
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    record CheckInLocation(
+            boolean available,
+            Double latitude,
+            Double longitude,
+            Double accuracy,
+            String reason) {
+
+        // Latitude first: formatLocation calls latitude.toFixed(5) as soon as
+        // available is true, so a half built object throws during render.
+        static CheckInLocation from(Visit visit) {
+            if (visit.getCheckInLatitude() != null) {
+                return new CheckInLocation(true, visit.getCheckInLatitude(),
+                        visit.getCheckInLongitude(), visit.getCheckInAccuracy(), null);
+            }
+
+            if (visit.getCheckInLocationReason() != null) {
+                return new CheckInLocation(false, null, null, null,
+                        visit.getCheckInLocationReason());
+            }
+
+            // Null, not an object. "Not captured" says nobody asked the device;
+            // {available: false} would say it was asked and refused.
+            return null;
+        }
     }
 }

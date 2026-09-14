@@ -1,4 +1,3 @@
-
 const API_BASE = "/api";
 
 // Dropped before the query string is built: URLSearchParams turns undefined
@@ -11,11 +10,23 @@ const toQuery = (params = {}) => {
     return entries.length ? `?${new URLSearchParams(entries)}` : "";
 };
 
-export const request = async (path, { signal, params } = {}) => {
+export const request = async (path, { signal, params, method = "GET", body } = {}) => {
     let response;
 
+    // Checked against undefined and not truthiness: JSON.stringify(null) is the
+    // string "null", a JSON document rather than an absent body, and Spring's
+    // @RequestBody(required = false) treats those differently. A bodyless
+    // request also sends no Content-Type, which keeps a cross origin GET simple
+    // rather than preflighted.
+    const hasBody = body !== undefined;
+
     try {
-        response = await fetch(`${API_BASE}${path}${toQuery(params)}`, { signal });
+        response = await fetch(`${API_BASE}${path}${toQuery(params)}`, {
+            method,
+            signal,
+            headers: hasBody ? { "Content-Type": "application/json" } : undefined,
+            body: hasBody ? JSON.stringify(body) : undefined,
+        });
     } catch (cause) {
         // An abort is useAsyncData cancelling itself on unmount. It must pass
         // through untouched or every navigation paints an error on the way out.
@@ -30,11 +41,14 @@ export const request = async (path, { signal, params } = {}) => {
         // Every catch site renders err.message verbatim, so the server's
         // message has to survive. status rides along for callers that need to
         // tell one failure from another.
-        const body = await response.json().catch(() => ({}));
-        const error = new Error(body.message ?? `Request failed (${response.status})`);
+        const errorBody = await response.json().catch(() => ({}));
+        const error = new Error(errorBody.message ?? `Request failed (${response.status})`);
         error.status = response.status;
         throw error;
     }
 
     return response.json();
 };
+
+export const post = (path, body, options) =>
+    request(path, { ...options, method: "POST", body });

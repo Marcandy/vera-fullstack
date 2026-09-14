@@ -1,6 +1,6 @@
 import { visits } from "../data/visits";
 import { VISIT_STATUS, VISIT_STATUS_LABEL } from "../utils/status";
-import { request } from "./apiClient";
+import { post, request } from "./apiClient";
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -93,62 +93,20 @@ export const getVisitById = async (id, { signal } = {}) => {
 // caller could author is not evidence. Location is metadata either way: it is
 // never part of the four-field evidence check, so a caregiver whose phone
 // refused permission still produces a billable visit.
-export const checkInVisit = async (id, location) => {
-    await delay(300);
+// The caller supplies the location because the device is the only authority on
+// where it is. The server stamps the clock, because a time the caller could
+// author is not evidence. Location never blocks: a refused fix still checks in.
+//
+// `?? undefined` and never `?? null`: null would post the JSON document "null"
+// rather than no body at all.
+export const checkInVisit = async (id, location) =>
+    post(`/visits/${id}/check-in`, location ?? undefined);
 
-    const idx = findIdx(id)
-
-    if (visits[idx].status !== VISIT_STATUS.SCHEDULED) {
-       throw new Error(`Cannot check in a visit that is ${statusText(visits[idx].status)}`)
-    }
-
-    visits[idx] = {...visits[idx],
-        status: VISIT_STATUS.IN_PROGRESS,
-        checkInTime: new Date().toISOString(),
-        checkInLocation: location ?? null
-    }
-
-    return visits[idx];
-
-}
-
-export const checkOutVisit = async (id, { assessment, signature }) => {
-    await delay(300);
-
-    const idx = findIdx(id)
-
-    if (visits[idx].status !== VISIT_STATUS.IN_PROGRESS ) {
-        throw new Error (`Cannot check out a visit that is ${statusText(visits[idx].status)}`);
-    }
-     
-    // empty string is not evidence, null is what the frontend will read
-    const cleanAssessment = assessment?.trim() ? assessment.trim() : null;
-    const cleanSignature = signature?.trim() ? signature.trim() : null;
-
-    const MOCK_VISIT_MINUTES = 90;
-    const checkOutTime = new Date(
-        new Date(visits[idx].checkInTime).getTime() + MOCK_VISIT_MINUTES * 60000
-    ).toISOString();
-
-    const updated = {
-        ...visits[idx],
-        assessment: cleanAssessment,
-        signature: cleanSignature,
-        checkOutTime: checkOutTime,
-    }
-
-    // evidence check for four field
-
-    const evidenceComplete = 
-        updated.checkInTime && updated.checkOutTime &&
-        updated.assessment && updated.signature;
-
-    updated.status = evidenceComplete ? VISIT_STATUS.READY_TO_BILL : VISIT_STATUS.NEEDS_REVIEW;
-
-    visits[idx] = updated;
-    // return the update object
-    return updated;
-}
+// The four field evidence check moved to the Java service with this. Whether a
+// visit lands on ready to bill or needs review is now decided once, server side,
+// where a client cannot talk it out of the answer.
+export const checkOutVisit = async (id, evidence) =>
+    post(`/visits/${id}/check-out`, evidence);
 
 
 export const supplyEvidence = async(id, {assessment, signature}) => {
