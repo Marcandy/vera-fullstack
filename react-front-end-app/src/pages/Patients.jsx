@@ -1,12 +1,39 @@
+import { useState } from "react";
 import { Link } from "react-router";
-import { getPatients } from "../services/patientService";
+import { addPatient, getPatients } from "../services/patientService";
 import LoadError from "../components/LoadError";
 import { useAsyncData } from "../hooks/useAsyncData";
 import styles from "./Patients.module.css";
 
 const Patients = () => {
-    const { data: patientList, error, loading, reload } = useAsyncData(
+    const { data: patientList, error, loading, reload, setData } = useAsyncData(
         (signal) => getPatients({ signal }), []);
+
+    const [name, setName] = useState("");
+    const [address, setAddress] = useState("");
+    const [phone, setPhone] = useState("");
+    const [standingConcerns, setStandingConcerns] = useState("");
+    const [adding, setAdding] = useState(false);
+    const [addError, setAddError] = useState(null);
+
+    async function handleAddPatient(event) {
+        event.preventDefault();
+        setAddError(null);
+        setAdding(true);
+
+        try {
+            const patient = await addPatient({ name, address, phone, standingConcerns });
+            setData((roster) => [...roster, patient]);
+            setName("");
+            setAddress("");
+            setPhone("");
+            setStandingConcerns("");
+        } catch (error) {
+            setAddError(error.message);
+        } finally {
+            setAdding(false);
+        }
+    }
 
     if (error) return (
         <LoadError
@@ -21,10 +48,69 @@ const Patients = () => {
         <section className={styles.patients}>
             <h3 className={styles.title}>Patients</h3>
 
+            <form className={styles.addForm} onSubmit={handleAddPatient}>
+                <h4 className={styles.addTitle}>Add a patient</h4>
+                <fieldset className={styles.formFields} disabled={adding} aria-label="New patient details">
+                    <div className={styles.fieldRow}>
+                        <div className={styles.field}>
+                            <label className={styles.fieldLabel} htmlFor="patient-name">Full name</label>
+                            <input
+                                id="patient-name"
+                                type="text"
+                                className={styles.fieldInput}
+                                required
+                                maxLength={255}
+                                value={name}
+                                onChange={(event) => setName(event.target.value)}
+                            />
+                        </div>
+                        <div className={styles.field}>
+                            <label className={styles.fieldLabel} htmlFor="patient-phone">Phone (optional)</label>
+                            <input
+                                id="patient-phone"
+                                type="tel"
+                                className={styles.fieldInput}
+                                maxLength={255}
+                                value={phone}
+                                onChange={(event) => setPhone(event.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <div className={styles.field}>
+                        <label className={styles.fieldLabel} htmlFor="patient-address">Address</label>
+                        <input
+                            id="patient-address"
+                            type="text"
+                            className={styles.fieldInput}
+                            required
+                            maxLength={255}
+                            value={address}
+                            onChange={(event) => setAddress(event.target.value)}
+                        />
+                    </div>
+                    <div className={styles.field}>
+                        <label className={styles.fieldLabel} htmlFor="patient-concerns">Standing concerns (optional)</label>
+                        <textarea
+                            id="patient-concerns"
+                            className={styles.fieldInput}
+                            rows={3}
+                            maxLength={2000}
+                            placeholder="What they need help with in general"
+                            value={standingConcerns}
+                            onChange={(event) => setStandingConcerns(event.target.value)}
+                        />
+                    </div>
+                </fieldset>
+                {addError && <p className={styles.errorNote} role="alert">{addError}</p>}
+                <button type="submit" className={styles.addButton} disabled={adding}>
+                    {adding ? "Adding..." : "Add Patient"}
+                </button>
+            </form>
+
             {patientList.length === 0 ? (
                 <p className={styles.emptyState}>
-                    No patients yet. Patients appear here once they are on the
-                    schedule.
+                    No patients yet. Add your first patient above to start
+                    their care record.
                 </p>
             ) : (
                 <ul className={styles.roster}>
