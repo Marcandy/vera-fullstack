@@ -7,9 +7,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 // One advice for the whole API rather than try/catch per controller. The service
 // throws what the domain means; this decides what HTTP calls it.
-//
-// Only the refusal is handled. A not-found POST and a malformed query parameter
-// are not reachable by clicking, so they stay on Spring's default.
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
@@ -18,6 +15,12 @@ public class ApiExceptionHandler {
     @ExceptionHandler(IllegalTransitionException.class)
     public ResponseEntity<ApiError> handleIllegalTransition(IllegalTransitionException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiError(exception.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidInputException.class)
+    public ResponseEntity<ApiError> handleInvalidInput(InvalidInputException exception) {
+        return ResponseEntity.badRequest()
                 .body(new ApiError(exception.getMessage()));
     }
 }
