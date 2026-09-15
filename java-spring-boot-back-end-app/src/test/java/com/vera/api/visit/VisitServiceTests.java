@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 import com.vera.api.IllegalTransitionException;
+import com.vera.api.claim.ClaimRepository;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ class VisitServiceTests {
 
         VisitRepository visits = mock(VisitRepository.class);
         when(visits.findByIdWithPeople(1L)).thenReturn(Optional.of(visit));
-        service = new VisitService(visits);
+        service = new VisitService(visits, mock(ClaimRepository.class));
     }
 
     @Test

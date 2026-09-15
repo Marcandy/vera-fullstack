@@ -110,4 +110,9 @@ public class VisitController {
             @RequestBody(required = false) EvidenceRequest evidence) {
         return VisitResponse.from(visitService.supplyEvidence(id, evidence));
     }
+
+    @PostMapping("/{id}/claim")
+    public VisitResponse submitClaim(@PathVariable Long id) {
+        return VisitResponse.from(visitService.submitClaim(id));
+    }
 }

@@ -34,7 +34,11 @@ public record VisitResponse(
 
         String assessment,
         String patientConcern,
-        String signature) {
+        String signature,
+        String claimId,
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+        Instant submittedAt) {
 
     static VisitResponse from(Visit visit) {
         return new VisitResponse(
@@ -52,7 +56,9 @@ public record VisitResponse(
                 visit.getCheckOutTime(),
                 visit.getAssessment(),
                 visit.getPatientConcern(),
-                visit.getSignature());
+                visit.getSignature(),
+                visit.getClaim() == null ? null : visit.getClaim().getReference(),
+                visit.getClaim() == null ? null : visit.getClaim().getSubmittedAt());
     }
 
     // Four flat columns become the nested object the browser sent, so what the

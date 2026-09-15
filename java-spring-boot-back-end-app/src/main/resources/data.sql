@@ -41,6 +41,7 @@ INSERT IGNORE INTO caregivers (id, name, phone) VALUES
 --
 -- The cost: a check-in written through the API does not survive a restart. Set
 -- spring.sql.init.mode=never while developing a write if that gets in the way.
+DELETE FROM claims;
 DELETE FROM visits;
 
 -- Yesterday's work: two visits missing evidence, three ready to bill, one billed.
@@ -120,3 +121,11 @@ INSERT INTO visits
  TIMESTAMP(UTC_DATE() - INTERVAL 9 DAY, '15:31:00'), TIMESTAMP(UTC_DATE() - INTERVAL 9 DAY, '17:02:00'),
  'Full physical therapy set completed. Reports stiffness in the morning only.',
  'Harold Brennan', NULL);
+
+-- Billed demo visits already have a claim. Insert after visits to satisfy the
+-- foreign key; keep the amount as a snapshot of the visit's estimated cost.
+INSERT INTO claims (visit_id, reference, amount, submitted_at)
+SELECT id, CONCAT('clm_', UUID()), estimated_cost,
+       TIMESTAMPADD(MINUTE, 5, check_out_time)
+FROM visits
+WHERE status = 'BILLED';

@@ -1,9 +1,12 @@
 package com.vera.api.visit;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import com.vera.api.IllegalTransitionException;
 import com.vera.api.NotFoundException;
+import com.vera.api.claim.Claim;
+import com.vera.api.claim.ClaimRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,9 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class VisitService {
 
     private final VisitRepository visits;
+    private final ClaimRepository claims;
 
-    VisitService(VisitRepository visits) {
+    VisitService(VisitRepository visits, ClaimRepository claims) {
         this.visits = visits;
+        this.claims = claims;
     }
 
     @Transactional
@@ -88,8 +93,27 @@ public class VisitService {
         return visit;
     }
 
-    // findByIdWithPeople and not findById: open-in-view is false, so the two
-    // relations have to be loaded inside this transaction or the controller
+    @Transactional
+    public Visit submitClaim(Long id) {
+        Visit visit = visits.findByIdForUpdate(id)
+                .orElseThrow(() -> new NotFoundException("Visit " + id + " not found"));
+
+        if (visit.getStatus() != VisitStatus.READY_TO_BILL) {
+            throw new IllegalTransitionException(
+                    "Cannot submit a claim for a visit that is " + visit.getStatus().label());
+        }
+
+        Claim claim = claims.save(new Claim(visit, "clm_" + UUID.randomUUID(),
+                visit.getEstimatedCost(), Instant.now()));
+        visit.setClaim(claim);
+        visit.setStatus(VisitStatus.BILLED);
+
+        // Load the response relations before leaving the transaction.
+        return load(id);
+    }
+
+    // findByIdWithPeople and not findById: open-in-view is false, so the
+    // response relations have to be loaded inside this transaction or the controller
     // throws when it maps the response.
     private Visit load(Long id) {
         return visits.findByIdWithPeople(id)

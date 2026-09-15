@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import com.vera.api.caregiver.Caregiver;
+import com.vera.api.claim.Claim;
 import com.vera.api.patient.Patient;
 
 import org.hibernate.annotations.JdbcTypeCode;
@@ -19,6 +20,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -59,6 +61,9 @@ public class Visit {
     // record that rounds differently than the payer loses the argument.
     @Column(precision = 10, scale = 2)
     private BigDecimal estimatedCost;
+
+    @OneToOne(mappedBy = "visit", fetch = FetchType.LAZY)
+    private Claim claim;
 
     // The four evidence fields. Null means not captured, and what a visit is
     // missing is derived from these nulls when it is read, never stored.
@@ -132,6 +137,14 @@ public class Visit {
 
     public BigDecimal getEstimatedCost() {
         return estimatedCost;
+    }
+
+    public Claim getClaim() {
+        return claim;
+    }
+
+    public void setClaim(Claim claim) {
+        this.claim = claim;
     }
 
     public void setEstimatedCost(BigDecimal estimatedCost) {
