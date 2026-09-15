@@ -25,6 +25,15 @@ public class Patient {
     @Column(length = 2000)
     private String standingConcerns;
 
+    protected Patient() {
+    }
+
+    public Patient(String name, String address, String phone, String standingConcerns) {
+        this.name = name;
+        this.address = address;
+        this.phone = phone;
+        this.standingConcerns = standingConcerns;
+    }
 
     public Long getId() {
         return id;
