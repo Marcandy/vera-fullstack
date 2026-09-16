@@ -1,21 +1,4 @@
-import { visits } from "../data/visits";
-import { VISIT_STATUS, VISIT_STATUS_LABEL } from "../utils/status";
 import { post, request } from "./apiClient";
-
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-
-// These messages are rendered to the caregiver verbatim, so they carry the
-// label rather than the identifier. When the Java service owns these refusals
-// it will send the same sentence in the error body, and this goes away.
-const statusText = (status) => (VISIT_STATUS_LABEL[status] ?? status).toLowerCase();
-
-const findIdx = (id) => {
-    const idx = visits.findIndex((visit) => visit.id === Number(id));
-    if (idx === -1) {
-        throw new Error(`Visit ${id} not found`)
-    }
-    return idx;
-}
 
 // GET /api/visits, with the filters as query parameters.
 //
@@ -113,21 +96,5 @@ export const checkOutVisit = async (id, evidence) =>
 export const supplyEvidence = async (id, evidence) =>
     post(`/visits/${id}/evidence`, evidence);
 
-export const submitClaim = async (id) => {
-    await delay(700);
-
-    const idx = findIdx(id);
-
-    if(visits[idx].status !== VISIT_STATUS.READY_TO_BILL) {
-        throw new Error(`Cannot submit a claim for a visit that is ${statusText(visits[idx].status)}`)
-    }
-
-    const updated = {
-        ...visits[idx],
-        status: VISIT_STATUS.BILLED,
-        submittedAt: new Date().toISOString(),
-        claimId: `clm_mock_${id}`
-    }
-    visits[idx] = updated;
-    return updated;
-}
+export const submitClaim = async (id) =>
+    post(`/visits/${id}/claim`);

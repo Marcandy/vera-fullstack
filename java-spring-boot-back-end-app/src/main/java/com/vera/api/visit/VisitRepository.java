@@ -3,13 +3,16 @@ package com.vera.api.visit;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.persistence.LockModeType;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface VisitRepository extends JpaRepository<Visit, Long> {
 
-    // join fetch loads the two relations in the same query. Plain findAll()
+    // join fetch loads the response relations in the same query. Plain findAll()
     // returns proxies that throw once the session closes, which is the bug this
     // replaces, and open-in-view would have hidden as a query per row instead.
     //
@@ -26,6 +29,7 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
             select v from Visit v
             join fetch v.patient p
             join fetch v.caregiver c
+            left join fetch v.claim
             where (:status is null or v.status = :status)
               and (:caregiverId is null or c.id = :caregiverId)
               and (:patientId is null or p.id = :patientId)
@@ -37,8 +41,13 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
             @Param("caregiverId") Long caregiverId,
             @Param("patientId") Long patientId);
 
-    @Query("select v from Visit v join fetch v.patient join fetch v.caregiver where v.id = :id")
+    @Query("select v from Visit v join fetch v.patient join fetch v.caregiver left join fetch v.claim where v.id = :id")
     Optional<Visit> findByIdWithPeople(@Param("id") Long id);
+
+    // Serialize claim submissions on the visit before checking its status.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select v from Visit v where v.id = :id")
+    Optional<Visit> findByIdForUpdate(@Param("id") Long id);
 
     // One group by rather than a count query per status, and rather than loading
     // every row to count it in Java. The chips need five numbers, not fourteen

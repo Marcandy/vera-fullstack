@@ -140,8 +140,14 @@ Money is `BigDecimal` because `double` cannot represent 0.10 exactly, and a
 billing record that rounds differently than the payer does is a record that
 loses arguments.
 
-No `Document` and no `Claim` yet. Both are their own tables in the ERD, and
-`ddl-auto=update` adds them later without disturbing these three.
+`Claim` has its own table with one row per billed visit. It stores the claim
+reference, amount at submission, and server timestamp. Submitting locks the
+visit and saves the claim and billed status in one transaction. Visit responses
+include `claimId` and `submittedAt`, so Billing reads persisted claim details.
+
+The demo seed deletes claims before visits, then creates claims for the billed
+demo visits. Run with `spring.sql.init.mode=never` to preserve local changes
+across restarts. `Document` remains a later addition.
 
 ### Order of work
 
