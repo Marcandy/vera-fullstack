@@ -15,6 +15,7 @@
 .inProgress  { background-color: #d9f0ef; color: #0e6b66; }
 .scheduled   { background-color: #fdf3df; color: #8a5a09; }
 .billed      { background-color: #e7f0f8; color: #175d80; }
+.cancelled   { background-color: #ececec; color: #3d3d3d; }
 
 /* document statuses share the same signal families:
    signed = complete (green), pending = waiting (amber),
