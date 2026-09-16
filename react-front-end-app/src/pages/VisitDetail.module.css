@@ -133,3 +133,87 @@
     color: var(--vera-primary-dark);
     border-bottom-color: var(--vera-primary);
 }
+
+.officeFields {
+    border: 0;
+    padding: 0;
+    margin: 0 0 12px;
+    display: grid;
+    gap: 12px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.fieldLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.fieldInput {
+    font: inherit;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: #ffffff;
+    min-width: 0;
+}
+
+.fieldInput:focus {
+    border-color: var(--vera-secondary);
+    box-shadow: 0 0 0 2px var(--focus-ring);
+    outline: none;
+}
+
+.errorNote {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    background-color: #fdecea;
+    border: 1px solid #f0b9b4;
+    border-radius: 8px;
+    color: #a61b1b;
+    font-size: 0.9rem;
+}
+
+.officeActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.saveButton {
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.saveButton:hover {
+    background-color: var(--btn-hover);
+}
+
+.saveButton:disabled,
+.cancelVisitButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.cancelVisitButton {
+    background-color: transparent;
+    color: #a61b1b;
+    border: 1px solid #f0b9b4;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
