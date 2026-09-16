@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.vera.api.IllegalTransitionException;
 import com.vera.api.NotFoundException;
+import com.vera.api.caregiver.CaregiverRepository;
 import com.vera.api.claim.Claim;
 import com.vera.api.claim.ClaimRepository;
 
@@ -18,10 +19,12 @@ public class VisitService {
 
     private final VisitRepository visits;
     private final ClaimRepository claims;
+    private final CaregiverRepository caregivers;
 
-    VisitService(VisitRepository visits, ClaimRepository claims) {
+    VisitService(VisitRepository visits, ClaimRepository claims, CaregiverRepository caregivers) {
         this.visits = visits;
         this.claims = claims;
+        this.caregivers = caregivers;
     }
 
     @Transactional
@@ -115,6 +118,36 @@ public class VisitService {
 
         // findByIdForUpdate does not join the response relations.
         return load(id);
+    }
+
+    @Transactional
+    public Visit reschedule(Long id, RescheduleRequest request) {
+        // TODO 1: load the visit with load(id).
+        // TODO 2: require SCHEDULED. Otherwise throw IllegalTransitionException
+        //         with "Cannot reschedule a visit that is " + visit.getStatus().label().
+        //         In progress, needs review, ready to bill, billed, and cancelled
+        //         all refuse. A visit with evidence is not moved.
+        // TODO 3: if request is null, or appointmentTime or caregiverId is null,
+        //         throw InvalidInputException naming the missing field.
+        // TODO 4: load the caregiver with caregivers.findById(request.caregiverId()).
+        //         If absent, throw NotFoundException with "Caregiver <id> not found".
+        // TODO 5: set the visit's appointment time and caregiver. Do not change
+        //         status, evidence, or cost.
+        // TODO 6: return load(id) so the response names the new caregiver.
+        //         Replace the placeholder throw when you implement the method.
+        throw new UnsupportedOperationException("reschedule is not implemented yet");
+    }
+
+    @Transactional
+    public Visit cancel(Long id) {
+        // TODO 1: load the visit with load(id).
+        // TODO 2: require SCHEDULED. Otherwise throw IllegalTransitionException
+        //         with "Cannot cancel a visit that is " + visit.getStatus().label().
+        // TODO 3: set status to CANCELLED. Do not delete the row. Evidence stays
+        //         as it is; a scheduled visit has none.
+        // TODO 4: return the visit. It was loaded with people already.
+        //         Replace the placeholder throw when you implement the method.
+        throw new UnsupportedOperationException("cancel is not implemented yet");
     }
 
     // findByIdWithPeople and not findById: open-in-view is false, so the
