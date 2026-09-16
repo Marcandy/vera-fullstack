@@ -103,12 +103,17 @@ public class VisitService {
                     "Cannot submit a claim for a visit that is " + visit.getStatus().label());
         }
 
-        Claim claim = claims.save(new Claim(visit, "clm_" + UUID.randomUUID(),
-                visit.getEstimatedCost(), Instant.now()));
-        visit.setClaim(claim);
+        Claim claim = new Claim(
+                visit,
+                "clm_" + UUID.randomUUID(),
+                visit.getEstimatedCost(),
+                Instant.now()
+        );
+        Claim saved = claims.save(claim);
+        visit.setClaim(saved);
         visit.setStatus(VisitStatus.BILLED);
 
-        // Load the response relations before leaving the transaction.
+        // findByIdForUpdate does not join the response relations.
         return load(id);
     }
 
