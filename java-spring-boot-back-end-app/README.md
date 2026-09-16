@@ -69,6 +69,8 @@ sub-resources named for the event that causes them rather than onto CRUD:
 | `checkOutVisit(id)` | `POST /api/visits/{id}/check-out` |
 | `supplyEvidence(id)` | `POST /api/visits/{id}/evidence` |
 | `submitClaim(id)` | `POST /api/visits/{id}/claim` |
+| `rescheduleVisit(id, body)` | `PUT /api/visits/{id}` |
+| `cancelVisit(id)` | `DELETE /api/visits/{id}` |
 | `getCaregivers()` | `GET /api/caregivers` |
 | `addCaregiver(...)` | `POST /api/caregivers` |
 | `signDocument(...)` | `POST /api/caregivers/{id}/documents/{docId}/signature` |
