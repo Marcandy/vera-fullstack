@@ -1,4 +1,4 @@
-import { post, request } from "./apiClient";
+import { del, post, put, request } from "./apiClient";
 
 // GET /api/visits, with the filters as query parameters.
 //
@@ -98,3 +98,9 @@ export const supplyEvidence = async (id, evidence) =>
 
 export const submitClaim = async (id) =>
     post(`/visits/${id}/claim`);
+
+export const rescheduleVisit = async (id, { appointmentTime, caregiverId }) =>
+    put(`/visits/${id}`, { appointmentTime, caregiverId });
+
+export const cancelVisit = async (id) =>
+    del(`/visits/${id}`);

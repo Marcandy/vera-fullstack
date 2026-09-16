@@ -4,7 +4,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 import com.vera.api.IllegalTransitionException;
+import com.vera.api.InvalidInputException;
 import com.vera.api.NotFoundException;
+import com.vera.api.caregiver.Caregiver;
+import com.vera.api.caregiver.CaregiverRepository;
 import com.vera.api.claim.Claim;
 import com.vera.api.claim.ClaimRepository;
 
@@ -18,10 +21,12 @@ public class VisitService {
 
     private final VisitRepository visits;
     private final ClaimRepository claims;
+    private final CaregiverRepository caregivers;
 
-    VisitService(VisitRepository visits, ClaimRepository claims) {
+    VisitService(VisitRepository visits, ClaimRepository claims, CaregiverRepository caregivers) {
         this.visits = visits;
         this.claims = claims;
+        this.caregivers = caregivers;
     }
 
     @Transactional
@@ -115,6 +120,47 @@ public class VisitService {
 
         // findByIdForUpdate does not join the response relations.
         return load(id);
+    }
+
+    @Transactional
+    public Visit reschedule(Long id, RescheduleRequest request) {
+        Visit visit = load(id);
+
+        if (visit.getStatus() != VisitStatus.SCHEDULED) {
+            throw new IllegalTransitionException(
+                    "Cannot reschedule a visit that is " + visit.getStatus().label());
+        }
+
+        if (request == null) {
+            throw new InvalidInputException("Reschedule request is required");
+        }
+        if (request.appointmentTime() == null) {
+            throw new InvalidInputException("Appointment time is required");
+        }
+        if (request.caregiverId() == null) {
+            throw new InvalidInputException("Caregiver id is required");
+        }
+
+        Caregiver caregiver = caregivers.findById(request.caregiverId())
+                .orElseThrow(() -> new NotFoundException(
+                        "Caregiver " + request.caregiverId() + " not found"));
+
+        visit.setAppointmentTime(request.appointmentTime());
+        visit.setCaregiver(caregiver);
+        return load(id);
+    }
+
+    @Transactional
+    public Visit cancel(Long id) {
+        Visit visit = load(id);
+
+        if (visit.getStatus() != VisitStatus.SCHEDULED) {
+            throw new IllegalTransitionException(
+                    "Cannot cancel a visit that is " + visit.getStatus().label());
+        }
+
+        visit.setStatus(VisitStatus.CANCELLED);
+        return visit;
     }
 
     // findByIdWithPeople and not findById: open-in-view is false, so the

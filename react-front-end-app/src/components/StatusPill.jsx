@@ -11,6 +11,7 @@ const STATUS_CLASSES = {
     [VISIT_STATUS.NEEDS_REVIEW]: styles.needsReview,
     [VISIT_STATUS.READY_TO_BILL]: styles.readyToBill,
     [VISIT_STATUS.BILLED]: styles.billed,
+    [VISIT_STATUS.CANCELLED]: styles.cancelled,
     [DOCUMENT_STATUS.SIGNED]: styles.signed,
     [DOCUMENT_STATUS.PENDING]: styles.pending,
     [DOCUMENT_STATUS.EXPIRING]: styles.expiring,

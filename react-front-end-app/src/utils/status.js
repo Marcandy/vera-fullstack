@@ -20,6 +20,7 @@ export const VISIT_STATUS = {
     NEEDS_REVIEW: "NEEDS_REVIEW",
     READY_TO_BILL: "READY_TO_BILL",
     BILLED: "BILLED",
+    CANCELLED: "CANCELLED",
 };
 
 // What a person reads. Separate from the identifier on purpose: renaming a pill
@@ -30,6 +31,7 @@ export const VISIT_STATUS_LABEL = {
     [VISIT_STATUS.NEEDS_REVIEW]: "Needs review",
     [VISIT_STATUS.READY_TO_BILL]: "Ready to bill",
     [VISIT_STATUS.BILLED]: "Billed",
+    [VISIT_STATUS.CANCELLED]: "Cancelled",
 };
 
 // Onboarding documents run their own vocabulary. They share StatusPill, so
@@ -62,6 +64,9 @@ export const DOCUMENT_STATUS_LABEL = {
 // not attention order, which is a screen's opinion about what Denise should
 // look at first and lives with that screen. Two different orderings of the
 // same vocabulary, kept apart on purpose.
+//
+// CANCELLED is omitted: it is an exit, not a filter chip, and parseVisitStatus
+// uses this list as the allowlist for the URL.
 export const VISIT_STATUS_LIST = [
     VISIT_STATUS.SCHEDULED,
     VISIT_STATUS.IN_PROGRESS,

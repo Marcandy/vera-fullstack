@@ -8,9 +8,11 @@ import com.vera.api.visit.VisitRepository.StatusCount;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -114,5 +116,19 @@ public class VisitController {
     @PostMapping("/{id}/claim")
     public VisitResponse submitClaim(@PathVariable Long id) {
         return VisitResponse.from(visitService.submitClaim(id));
+    }
+
+    // 200, not 204: the client replaces the visit it is holding with this body.
+    // required = false so a missing body is null, and the service decides the 400.
+    @PutMapping("/{id}")
+    public VisitResponse reschedule(@PathVariable Long id,
+            @RequestBody(required = false) RescheduleRequest request) {
+        return VisitResponse.from(visitService.reschedule(id, request));
+    }
+
+    // HTTP DELETE is the cancel verb. The row stays; status becomes CANCELLED.
+    @DeleteMapping("/{id}")
+    public VisitResponse cancel(@PathVariable Long id) {
+        return VisitResponse.from(visitService.cancel(id));
     }
 }

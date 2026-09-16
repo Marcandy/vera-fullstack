@@ -7,7 +7,9 @@ public enum VisitStatus {
     IN_PROGRESS("in progress"),
     NEEDS_REVIEW("needs review"),
     READY_TO_BILL("ready to bill"),
-    BILLED("billed");
+    BILLED("billed"),
+    // Exit, not a pipeline step: a scheduled visit that will not happen.
+    CANCELLED("cancelled");
 
     private final String label;
 
