@@ -143,7 +143,98 @@
     color: var(--text-muted);
 }
 
+.scheduleForm {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.scheduleTitle {
+    margin: 0 0 12px;
+    font-size: 1rem;
+    color: var(--vera-primary-dark);
+}
+
+.formFields {
+    border: 0;
+    padding: 0;
+    margin: 0 0 12px;
+    min-width: 0;
+    display: grid;
+    gap: 12px;
+}
+
+.fieldRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.fieldLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.fieldInput {
+    font: inherit;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background-color: #ffffff;
+    min-width: 0;
+}
+
+.fieldInput:focus {
+    border-color: var(--vera-secondary);
+    box-shadow: 0 0 0 2px var(--focus-ring);
+    outline: none;
+}
+
+.addButton {
+    background-color: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.addButton:hover {
+    background-color: var(--btn-hover);
+}
+
+.addButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.errorNote {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    background-color: #fdecea;
+    border: 1px solid #f0b9b4;
+    border-radius: 8px;
+    color: #a61b1b;
+    font-size: 0.9rem;
+}
+
 @media (max-width: 640px) {
+    .fieldRow {
+        grid-template-columns: 1fr;
+    }
+
     .searchRow {
         flex-wrap: wrap;
     }
