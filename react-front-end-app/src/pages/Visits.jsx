@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import VisitCard from "../components/VisitCard";
 import LoadError from "../components/LoadError";
 import styles from "./Visits.module.css";
-import { getVisits, getVisitCounts } from "../services/visitService";
+import { getVisits, getVisitCounts, scheduleVisit } from "../services/visitService";
+import { getPatients } from "../services/patientService";
+import { getCaregivers } from "../services/caregiverService";
 import { VISIT_STATUS, VISIT_STATUS_LIST, VISIT_STATUS_LABEL, parseVisitStatus } from "../utils/status";
+import { SERVICE_TYPE, SERVICE_TYPE_LABEL } from "../utils/serviceType";
 
 import { useNow } from "../hooks/useNow";
 import { useAsyncData } from "../hooks/useAsyncData";
@@ -84,7 +88,48 @@ const Visits = () => {
         (signal) => getVisits({ status: activeStatus, q: debouncedQuery }, { signal }),
         [activeStatus, debouncedQuery]);
 
+    const { data: patients } = useAsyncData(
+        (signal) => getPatients({ signal }), []);
+    const { data: caregivers } = useAsyncData(
+        () => getCaregivers(), []);
+
+    const [patientId, setPatientId] = useState("");
+    const [caregiverId, setCaregiverId] = useState("");
+    const [appointmentLocal, setAppointmentLocal] = useState("");
+    const [serviceType, setServiceType] = useState("");
+    const [estimatedCost, setEstimatedCost] = useState("");
+    const [scheduling, setScheduling] = useState(false);
+    const [scheduleError, setScheduleError] = useState(null);
+
     const reload = () => { reloadCounts(); reloadList(); };
+
+    const patientList = patients ?? [];
+    const caregiverList = caregivers ?? [];
+
+    async function handleSchedule(event) {
+        event.preventDefault();
+        setScheduleError(null);
+        setScheduling(true);
+        try {
+            await scheduleVisit({
+                patientId: Number(patientId),
+                caregiverId: Number(caregiverId),
+                appointmentTime: new Date(appointmentLocal).toISOString(),
+                serviceType,
+                estimatedCost: Number(estimatedCost),
+            });
+            reload();
+            setPatientId("");
+            setCaregiverId("");
+            setAppointmentLocal("");
+            setServiceType("");
+            setEstimatedCost("");
+        } catch (error) {
+            setScheduleError(error.message);
+        } finally {
+            setScheduling(false);
+        }
+    }
 
     // Replace rather than push: filtering is not a place you navigated to,
     // so twelve chip clicks should not mean twelve presses of the back button
@@ -143,6 +188,95 @@ const Visits = () => {
                     </select>
                 </label>
             </div>
+
+            <form className={styles.scheduleForm} onSubmit={handleSchedule}>
+                <h4 className={styles.scheduleTitle}>Schedule a visit</h4>
+                <fieldset className={styles.formFields} disabled={scheduling} aria-label="New visit details">
+                    <div className={styles.fieldRow}>
+                        <div className={styles.field}>
+                            <label className={styles.fieldLabel} htmlFor="schedule-patient">Patient</label>
+                            <select
+                                id="schedule-patient"
+                                className={styles.fieldInput}
+                                required
+                                value={patientId}
+                                onChange={(event) => setPatientId(event.target.value)}
+                            >
+                                <option value="">Select a patient</option>
+                                {patientList.map((patient) => (
+                                    <option key={patient.id} value={patient.id}>
+                                        {patient.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className={styles.field}>
+                            <label className={styles.fieldLabel} htmlFor="schedule-caregiver">Caregiver</label>
+                            <select
+                                id="schedule-caregiver"
+                                className={styles.fieldInput}
+                                required
+                                value={caregiverId}
+                                onChange={(event) => setCaregiverId(event.target.value)}
+                            >
+                                <option value="">Select a caregiver</option>
+                                {caregiverList.map((caregiver) => (
+                                    <option key={caregiver.id} value={caregiver.id}>
+                                        {caregiver.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <div className={styles.fieldRow}>
+                        <div className={styles.field}>
+                            <label className={styles.fieldLabel} htmlFor="schedule-appointment">Appointment</label>
+                            <input
+                                id="schedule-appointment"
+                                type="datetime-local"
+                                className={styles.fieldInput}
+                                required
+                                value={appointmentLocal}
+                                onChange={(event) => setAppointmentLocal(event.target.value)}
+                            />
+                        </div>
+                        <div className={styles.field}>
+                            <label className={styles.fieldLabel} htmlFor="schedule-service">Service type</label>
+                            <select
+                                id="schedule-service"
+                                className={styles.fieldInput}
+                                required
+                                value={serviceType}
+                                onChange={(event) => setServiceType(event.target.value)}
+                            >
+                                <option value="">Select a service</option>
+                                {Object.values(SERVICE_TYPE).map((type) => (
+                                    <option key={type} value={type}>
+                                        {SERVICE_TYPE_LABEL[type]}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                    <div className={styles.field}>
+                        <label className={styles.fieldLabel} htmlFor="schedule-cost">Estimated cost</label>
+                        <input
+                            id="schedule-cost"
+                            type="number"
+                            className={styles.fieldInput}
+                            required
+                            min="0"
+                            step="0.01"
+                            value={estimatedCost}
+                            onChange={(event) => setEstimatedCost(event.target.value)}
+                        />
+                    </div>
+                </fieldset>
+                {scheduleError && <p className={styles.errorNote} role="alert">{scheduleError}</p>}
+                <button type="submit" className={styles.addButton} disabled={scheduling}>
+                    {scheduling ? "Scheduling..." : "Schedule visit"}
+                </button>
+            </form>
 
             <div className={styles.searchRow}>
                 <label className={styles.searchLabel} htmlFor="visit-search">
