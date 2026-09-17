@@ -1,5 +1,6 @@
 package com.vera.api.visit;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-// VisitService owns write transitions and the evidence rule; scheduling is #22.
+// VisitService owns write transitions and the evidence rule. No rules here.
 @RestController
 @RequestMapping("/api/visits")
 public class VisitController {
@@ -86,6 +87,16 @@ public class VisitController {
                 .map(VisitResponse::from)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // 201: a visit was created. required = false so a missing body is null and
+    // the service decides the 400. No rules here.
+    @PostMapping
+    public ResponseEntity<VisitResponse> schedule(
+            @RequestBody(required = false) ScheduleVisitRequest request) {
+        Visit visit = visitService.schedule(request);
+        return ResponseEntity.created(URI.create("/api/visits/" + visit.getId()))
+                .body(VisitResponse.from(visit));
     }
 
     // required = false on both: a caregiver who denied the location prompt still

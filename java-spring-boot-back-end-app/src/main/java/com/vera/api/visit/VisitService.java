@@ -10,6 +10,8 @@ import com.vera.api.caregiver.Caregiver;
 import com.vera.api.caregiver.CaregiverRepository;
 import com.vera.api.claim.Claim;
 import com.vera.api.claim.ClaimRepository;
+import com.vera.api.patient.Patient;
+import com.vera.api.patient.PatientRepository;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,11 +24,14 @@ public class VisitService {
     private final VisitRepository visits;
     private final ClaimRepository claims;
     private final CaregiverRepository caregivers;
+    private final PatientRepository patients;
 
-    VisitService(VisitRepository visits, ClaimRepository claims, CaregiverRepository caregivers) {
+    VisitService(VisitRepository visits, ClaimRepository claims,
+            CaregiverRepository caregivers, PatientRepository patients) {
         this.visits = visits;
         this.claims = claims;
         this.caregivers = caregivers;
+        this.patients = patients;
     }
 
     @Transactional
@@ -161,6 +166,46 @@ public class VisitService {
 
         visit.setStatus(VisitStatus.CANCELLED);
         return visit;
+    }
+
+    @Transactional
+    public Visit schedule(ScheduleVisitRequest request) {
+        if (request == null) {
+            throw new InvalidInputException("Schedule request is required");
+        }
+        if (request.patientId() == null) {
+            throw new InvalidInputException("Patient id is required");
+        }
+        if (request.caregiverId() == null) {
+            throw new InvalidInputException("Caregiver id is required");
+        }
+        if (request.appointmentTime() == null) {
+            throw new InvalidInputException("Appointment time is required");
+        }
+        if (request.serviceType() == null) {
+            throw new InvalidInputException("Service type is required");
+        }
+        if (request.estimatedCost() == null) {
+            throw new InvalidInputException("Estimated cost is required");
+        }
+
+        Patient patient = patients.findById(request.patientId())
+                .orElseThrow(() -> new NotFoundException(
+                        "Patient " + request.patientId() + " not found"));
+        Caregiver caregiver = caregivers.findById(request.caregiverId())
+                .orElseThrow(() -> new NotFoundException(
+                        "Caregiver " + request.caregiverId() + " not found"));
+
+        Visit visit = new Visit();
+        visit.setPatient(patient);
+        visit.setCaregiver(caregiver);
+        visit.setAppointmentTime(request.appointmentTime());
+        visit.setServiceType(request.serviceType());
+        visit.setEstimatedCost(request.estimatedCost());
+        visit.setStatus(VisitStatus.SCHEDULED);
+
+        Visit saved = visits.save(visit);
+        return load(saved.getId());
     }
 
     // findByIdWithPeople and not findById: open-in-view is false, so the

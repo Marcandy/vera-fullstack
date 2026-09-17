@@ -104,3 +104,12 @@ export const rescheduleVisit = async (id, { appointmentTime, caregiverId }) =>
 
 export const cancelVisit = async (id) =>
     del(`/visits/${id}`);
+
+export const scheduleVisit = async ({
+    patientId,
+    caregiverId,
+    appointmentTime,
+    serviceType,
+    estimatedCost,
+}) =>
+    post("/visits", { patientId, caregiverId, appointmentTime, serviceType, estimatedCost });
