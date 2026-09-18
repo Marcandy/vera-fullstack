@@ -22,14 +22,14 @@ public class CaregiverController {
 
     @GetMapping
     public List<CaregiverResponse> getCaregivers() {
-        return caregivers.findAll().stream()
+        return caregivers.findAllWithDocuments().stream()
                 .map(CaregiverResponse::from)
                 .toList();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CaregiverResponse> getCaregiverById(@PathVariable Long id) {
-        return caregivers.findById(id)
+        return caregivers.findByIdWithDocuments(id)
                 .map(CaregiverResponse::from)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());

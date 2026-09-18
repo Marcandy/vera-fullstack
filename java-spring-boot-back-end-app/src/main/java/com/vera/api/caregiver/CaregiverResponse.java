@@ -1,13 +1,22 @@
 package com.vera.api.caregiver;
 
-// The wire shape, not the entity. Documents will be their own response when the
-// compliance feature lands, never a nested dump of the table.
-public record CaregiverResponse(Long id, String name, String phone) {
+import java.util.List;
+
+// The mock shape: ids, names, phone, and the nested checklist. Status is not
+// a field. The table stays separate; this list is the read model.
+public record CaregiverResponse(
+        Long id,
+        String name,
+        String phone,
+        List<DocumentResponse> documents) {
 
     static CaregiverResponse from(Caregiver caregiver) {
         return new CaregiverResponse(
                 caregiver.getId(),
                 caregiver.getName(),
-                caregiver.getPhone());
+                caregiver.getPhone(),
+                caregiver.getDocuments().stream()
+                        .map(DocumentResponse::from)
+                        .toList());
     }
 }
