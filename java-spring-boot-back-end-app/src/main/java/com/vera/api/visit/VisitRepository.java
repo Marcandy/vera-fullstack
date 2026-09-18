@@ -59,6 +59,8 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
     @Query("select v.status as status, count(v) as count from Visit v group by v.status")
     List<StatusCount> countByStatus();
 
+    boolean existsByCaregiver_Id(Long caregiverId);
+
     // A projection interface, not the entity and not Object[]. Spring Data reads
     // the getters against the aliases above, so the fold in the controller needs
     // no cast.
