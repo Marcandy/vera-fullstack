@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import styles from "./Caregivers.module.css";
-import { addCaregiver, getCaregivers } from "../services/caregiverService";
+import { addCaregiver, deleteCaregiver, getCaregivers } from "../services/caregiverService";
 import { documentSummary, isClearedToWork } from "../utils/documents";
 import { DOCUMENT_STATUS } from "../utils/status";
 import { useNow } from "../hooks/useNow";
@@ -35,6 +35,7 @@ const Caregivers = () => {
 
     const [error, setError] = useState(null);
     const [adding, setAdding] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
     const [firstLast, setFirstLast] = useState("");
     const [phone, setPhone] = useState("");
 
@@ -58,6 +59,21 @@ const Caregivers = () => {
             setError(err.message);
         } finally {
             setAdding(false);
+        }
+    }
+
+    async function handleDeleteCaregiver(event, caregiverId) {
+        event.preventDefault();
+        event.stopPropagation();
+        setError(null);
+        setDeletingId(caregiverId);
+        try {
+            await deleteCaregiver(caregiverId);
+            setData((roster) => roster.filter((row) => row.id !== caregiverId));
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setDeletingId(null);
         }
     }
 
@@ -118,7 +134,7 @@ const Caregivers = () => {
                         const cleared = isClearedToWork(caregiver, now);
 
                         return (
-                            <li key={caregiver.id}>
+                            <li key={caregiver.id} className={styles.rosterRow}>
                                 <Link to={`/caregivers/${caregiver.id}`} className={styles.cardLink}>
                                     <article className={styles.caregiverCard}>
                                         <div className={styles.cardHeader}>
@@ -131,6 +147,14 @@ const Caregivers = () => {
                                         <p className={styles.paperwork}>{paperworkLine(caregiver, now)}</p>
                                     </article>
                                 </Link>
+                                <button
+                                    type="button"
+                                    className={styles.deleteButton}
+                                    disabled={deletingId !== null}
+                                    onClick={(event) => handleDeleteCaregiver(event, caregiver.id)}
+                                >
+                                    {deletingId === caregiver.id ? "Deleting..." : "Delete"}
+                                </button>
                             </li>
                         );
                     })}

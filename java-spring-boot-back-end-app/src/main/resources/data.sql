@@ -35,6 +35,35 @@ INSERT IGNORE INTO caregivers (id, name, phone) VALUES
 (4, 'Luis Rivera',     '215-555-0163'),
 (5, 'Angela Brooks',   '215-555-0129');
 
+-- Seed checklist for the five people. Offsets from UTC_DATE so the expiring
+-- and lapsed cases stay on the right side of today. API-created hires keep
+-- their rows: only caregivers 1 to 5 are rewritten.
+DELETE FROM documents WHERE caregiver_id BETWEEN 1 AND 5;
+
+INSERT INTO documents
+    (id, caregiver_id, name, issued_at, expires_at, signature, file_name, file_size, file_type, received_at)
+VALUES
+(1,  1, 'State ID',            TIMESTAMP(UTC_DATE() - INTERVAL 1100 DAY, '00:00:00'), TIMESTAMP(UTC_DATE() + INTERVAL 600 DAY, '23:59:00'), NULL,           'marcus-reed-state-id.jpg',     412336, 'image/jpeg',       TIMESTAMP(UTC_DATE() - INTERVAL 820 DAY, '09:12:00')),
+(2,  1, 'Background Check',    TIMESTAMP(UTC_DATE() - INTERVAL 830 DAY, '00:00:00'),  NULL,                                                'Marcus Reed', NULL,                          NULL,   NULL,               TIMESTAMP(UTC_DATE() - INTERVAL 830 DAY, '14:40:00')),
+(3,  1, 'CPR Certification',   TIMESTAMP(UTC_DATE() - INTERVAL 712 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 18 DAY, '23:59:00'),  NULL,           'marcus-cpr-card.pdf',          186204, 'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 710 DAY, '11:05:00')),
+(4,  1, 'TB Test',             TIMESTAMP(UTC_DATE() - INTERVAL 250 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 115 DAY, '23:59:00'), NULL,           'marcus-tb-results.pdf',        94118,  'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 248 DAY, '16:20:00')),
+(5,  2, 'State ID',            TIMESTAMP(UTC_DATE() - INTERVAL 600 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 900 DAY, '23:59:00'), NULL,           'dana-alvarez-state-id.jpg',    388910, 'image/jpeg',       TIMESTAMP(UTC_DATE() - INTERVAL 500 DAY, '10:02:00')),
+(6,  2, 'Background Check',    TIMESTAMP(UTC_DATE() - INTERVAL 500 DAY, '00:00:00'),  NULL,                                                'Dana Alvarez',NULL,                          NULL,   NULL,               TIMESTAMP(UTC_DATE() - INTERVAL 500 DAY, '15:18:00')),
+(7,  2, 'CPR Certification',   TIMESTAMP(UTC_DATE() - INTERVAL 300 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 430 DAY, '23:59:00'), NULL,           'dana-cpr-card.pdf',            201774, 'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 298 DAY, '09:44:00')),
+(8,  2, 'TB Test',             NULL,                                                NULL,                                                NULL,           NULL,                          NULL,   NULL,               NULL),
+(9,  3, 'State ID',            TIMESTAMP(UTC_DATE() - INTERVAL 900 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 800 DAY, '23:59:00'), NULL,           'keisha-thompson-state-id.jpg', 401552, 'image/jpeg',       TIMESTAMP(UTC_DATE() - INTERVAL 700 DAY, '08:35:00')),
+(10, 3, 'Background Check',    TIMESTAMP(UTC_DATE() - INTERVAL 700 DAY, '00:00:00'),  NULL,                                                'Keisha Thompson', NULL,                      NULL,   NULL,               TIMESTAMP(UTC_DATE() - INTERVAL 700 DAY, '13:07:00')),
+(11, 3, 'CPR Certification',   TIMESTAMP(UTC_DATE() - INTERVAL 400 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 330 DAY, '23:59:00'), NULL,           'keisha-cpr-card.pdf',          178640, 'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 395 DAY, '12:29:00')),
+(12, 3, 'TB Test',             TIMESTAMP(UTC_DATE() - INTERVAL 120 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 245 DAY, '23:59:00'), NULL,           'keisha-tb-results.pdf',        88402,  'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 118 DAY, '17:11:00')),
+(13, 4, 'State ID',            TIMESTAMP(UTC_DATE() - INTERVAL 200 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 1200 DAY, '23:59:00'),NULL,           'luis-rivera-state-id.jpg',     355017, 'image/jpeg',       TIMESTAMP(UTC_DATE() - INTERVAL 60 DAY, '11:52:00')),
+(14, 4, 'Background Check',    NULL,                                                NULL,                                                NULL,           NULL,                          NULL,   NULL,               NULL),
+(15, 4, 'CPR Certification',   NULL,                                                NULL,                                                NULL,           NULL,                          NULL,   NULL,               NULL),
+(16, 4, 'TB Test',             NULL,                                                NULL,                                                NULL,           NULL,                          NULL,   NULL,               NULL),
+(17, 5, 'State ID',            TIMESTAMP(UTC_DATE() - INTERVAL 1000 DAY, '00:00:00'), TIMESTAMP(UTC_DATE() + INTERVAL 400 DAY, '23:59:00'), NULL,           'angela-brooks-state-id.jpg',   397228, 'image/jpeg',       TIMESTAMP(UTC_DATE() - INTERVAL 900 DAY, '09:03:00')),
+(18, 5, 'Background Check',    TIMESTAMP(UTC_DATE() - INTERVAL 900 DAY, '00:00:00'),  NULL,                                                'Angela Brooks',NULL,                          NULL,   NULL,               TIMESTAMP(UTC_DATE() - INTERVAL 900 DAY, '16:47:00')),
+(19, 5, 'CPR Certification',   TIMESTAMP(UTC_DATE() - INTERVAL 742 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() - INTERVAL 12 DAY, '23:59:00'),  NULL,           'angela-cpr-card.pdf',          192845, 'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 740 DAY, '10:16:00')),
+(20, 5, 'TB Test',             NULL,                                                NULL,                                                NULL,           NULL,                          NULL,   NULL,               NULL);
+
 -- Rewritten every start. The offsets below are evaluated at INSERT time, so
 -- skipping the insert freezes the demo day on whatever day the rows first
 -- landed. Deleting first is what keeps today actually today.

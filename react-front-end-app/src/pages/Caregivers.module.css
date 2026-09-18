@@ -95,6 +95,17 @@
     gap: 12px;
 }
 
+.rosterRow {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.rosterRow .cardLink {
+    flex: 1;
+    min-width: 0;
+}
+
 /* the roster row is a link into the caregiver's record now, so the wrapper
    carries the affordance and its owner styles it, matching Patients */
 .cardLink {
@@ -167,6 +178,26 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 24px;
+}
+
+.deleteButton {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font: inherit;
+    font-size: 0.85rem;
+    color: #a61b1b;
+    cursor: pointer;
+}
+
+.deleteButton:hover {
+    border-color: #a61b1b;
+}
+
+.deleteButton:disabled {
+    opacity: 0.6;
+    cursor: default;
 }
 
 /* phone: form fields stack, and name + cleared badge may wrap */

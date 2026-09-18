@@ -1,4 +1,5 @@
 import { caregivers } from "../data/caregivers";
+import { del, post, request } from "./apiClient";
 import { documentStatus } from "../utils/documents";
 import { DOCUMENT_STATUS } from "../utils/status";
 
@@ -36,63 +37,29 @@ const withDocument = (caregiver, documentId, changes) => ({
 });
 
 // GET /api/caregivers
-export const getCaregivers = async () => {
-    await delay(300);
-
-    return caregivers
-}
+export const getCaregivers = async ({ signal } = {}) =>
+    request("/caregivers", { signal });
 
 // GET /api/caregivers/{id}. Returns undefined for an id that does not exist
 // rather than throwing, matching getPatientById: a page asking about a record
 // that is not there renders a not-found state, it does not catch an error.
-export const getCaregiverById = async (caregiverId) => {
-    await delay(300);
-
-    return caregivers.find((caregiver) => caregiver.id === Number(caregiverId));
-}
-
-// POST /api/caregivers
-export const addCaregiver = async ({ name, phone }) => {
-    await delay(300);
-    if(!name?.trim()) throw new Error("Caregiver name is required");
-
-    // Document ids are unique across every caregiver, not within one, because
-    // documents are their own table with their own primary key. Taking the max
-    // over all of them is what a sequence does.
-    const nextDocumentId =
-        Math.max(...caregivers.flatMap((c) => c.documents.map((doc) => doc.id))) + 1;
-
-    // A new hire starts with the checklist and nothing received. Every field
-    // is null rather than absent: null is a captured absence, an undefined key
-    // is a shape that disagrees with every other document.
-    const blankDocument = (id, docName) => ({
-        id,
-        name: docName,
-        issuedAt: null,
-        expiresAt: null,
-        signature: null,
-        fileName: null,
-        fileSize: null,
-        fileType: null,
-        receivedAt: null,
-        submission: null,
-    });
-
-    const newCaregiver = {
-        id: Math.max(...caregivers.map((c) => c.id)) + 1,
-        name,
-        phone,
-        documents: [
-            "State ID",
-            "Background Check",
-            "CPR Certification",
-            "TB Test",
-        ].map((docName, offset) => blankDocument(nextDocumentId + offset, docName)),
+export const getCaregiverById = async (caregiverId, { signal } = {}) => {
+    try {
+        return await request(`/caregivers/${caregiverId}`, { signal });
+    } catch (error) {
+        if (error.status === 404) return undefined;
+        throw error;
     }
+};
 
-    caregivers.push(newCaregiver);
-    return newCaregiver;
-}
+// POST /api/caregivers. The Java service creates the four blank checklist
+// documents. Do not build them in the browser.
+export const addCaregiver = async ({ name, phone }) =>
+    post("/caregivers", { name, phone });
+
+// DELETE /api/caregivers/{id}. apiClient already accepts an empty 204. A 409
+// means they have visits; let it throw so the roster can render err.message.
+export const deleteCaregiver = async (id) => del(`/caregivers/${id}`);
 
 // POST /api/caregivers/{id}/documents/{documentId}/signature
 //
