@@ -47,7 +47,12 @@ export const request = async (path, { signal, params, method = "GET", body } = {
         throw error;
     }
 
-    return response.json();
+    // 204 and an empty 200 have no JSON document. response.json() would throw
+    // on the empty body a DELETE returns.
+    if (response.status === 204) return undefined;
+    const text = await response.text();
+    if (!text) return undefined;
+    return JSON.parse(text);
 };
 
 export const post = (path, body, options) =>
