@@ -118,7 +118,7 @@ const Caregivers = () => {
                         const cleared = isClearedToWork(caregiver, now);
 
                         return (
-                            <li key={caregiver.id}>
+                            <li key={caregiver.id} className={styles.rosterRow}>
                                 <Link to={`/caregivers/${caregiver.id}`} className={styles.cardLink}>
                                     <article className={styles.caregiverCard}>
                                         <div className={styles.cardHeader}>
@@ -131,6 +131,16 @@ const Caregivers = () => {
                                         <p className={styles.paperwork}>{paperworkLine(caregiver, now)}</p>
                                     </article>
                                 </Link>
+                                {/* TODO 1: import deleteCaregiver from caregiverService.
+                                        Add a Delete button beside the card, type="button".
+                                        Call event.preventDefault and event.stopPropagation
+                                        so the card link does not fire. Use styles.deleteButton. */}
+                                {/* TODO 2: on click call deleteCaregiver(caregiver.id).
+                                        On success drop that row: setData((roster) =>
+                                        roster.filter((row) => row.id !== caregiver.id)).
+                                        On 409 show error.message in the existing errorNote. */}
+                                {/* TODO 3: disable while a delete is in flight. Demo: add
+                                        a hire, delete that hire. Do not delete Marcus. */}
                             </li>
                         );
                     })}
