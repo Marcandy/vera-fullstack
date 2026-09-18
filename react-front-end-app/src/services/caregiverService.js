@@ -36,6 +36,9 @@ const withDocument = (caregiver, documentId, changes) => ({
 });
 
 // GET /api/caregivers
+// TODO: import { del, post, request } from "./apiClient". Replace the mock
+//       with request("/caregivers", { signal }). Accept { signal } = {}
+//       like getPatients. Leave this function's callers unchanged.
 export const getCaregivers = async () => {
     await delay(300);
 
@@ -45,6 +48,9 @@ export const getCaregivers = async () => {
 // GET /api/caregivers/{id}. Returns undefined for an id that does not exist
 // rather than throwing, matching getPatientById: a page asking about a record
 // that is not there renders a not-found state, it does not catch an error.
+// TODO: replace the mock with request(`/caregivers/${caregiverId}`, { signal }).
+//       Catch error.status === 404 and return undefined. Accept
+//       (caregiverId, { signal } = {}).
 export const getCaregiverById = async (caregiverId) => {
     await delay(300);
 
@@ -52,6 +58,9 @@ export const getCaregiverById = async (caregiverId) => {
 }
 
 // POST /api/caregivers
+// TODO: replace the mock with post("/caregivers", { name, phone }). The Java
+//       service creates the four blank checklist documents. Do not build
+//       them in the browser.
 export const addCaregiver = async ({ name, phone }) => {
     await delay(300);
     if(!name?.trim()) throw new Error("Caregiver name is required");
@@ -92,6 +101,14 @@ export const addCaregiver = async ({ name, phone }) => {
 
     caregivers.push(newCaregiver);
     return newCaregiver;
+}
+
+// DELETE /api/caregivers/{id}
+// TODO: return del(`/caregivers/${id}`). apiClient already accepts an empty
+//       204. A 409 means they have visits; let it throw so the roster can
+//       render err.message. Replace the placeholder throw when you implement.
+export const deleteCaregiver = async (id) => {
+    throw new Error("deleteCaregiver is not implemented yet");
 }
 
 // POST /api/caregivers/{id}/documents/{documentId}/signature
