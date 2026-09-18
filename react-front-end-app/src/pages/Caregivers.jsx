@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
 import styles from "./Caregivers.module.css";
-import { addCaregiver, getCaregivers } from "../services/caregiverService";
+import { addCaregiver, deleteCaregiver, getCaregivers } from "../services/caregiverService";
 import { documentSummary, isClearedToWork } from "../utils/documents";
 import { DOCUMENT_STATUS } from "../utils/status";
 import { useNow } from "../hooks/useNow";
@@ -35,6 +35,7 @@ const Caregivers = () => {
 
     const [error, setError] = useState(null);
     const [adding, setAdding] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
     const [firstLast, setFirstLast] = useState("");
     const [phone, setPhone] = useState("");
 
@@ -58,6 +59,21 @@ const Caregivers = () => {
             setError(err.message);
         } finally {
             setAdding(false);
+        }
+    }
+
+    async function handleDeleteCaregiver(event, caregiverId) {
+        event.preventDefault();
+        event.stopPropagation();
+        setError(null);
+        setDeletingId(caregiverId);
+        try {
+            await deleteCaregiver(caregiverId);
+            setData((roster) => roster.filter((row) => row.id !== caregiverId));
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setDeletingId(null);
         }
     }
 
@@ -131,16 +147,14 @@ const Caregivers = () => {
                                         <p className={styles.paperwork}>{paperworkLine(caregiver, now)}</p>
                                     </article>
                                 </Link>
-                                {/* TODO 1: import deleteCaregiver from caregiverService.
-                                        Add a Delete button beside the card, type="button".
-                                        Call event.preventDefault and event.stopPropagation
-                                        so the card link does not fire. Use styles.deleteButton. */}
-                                {/* TODO 2: on click call deleteCaregiver(caregiver.id).
-                                        On success drop that row: setData((roster) =>
-                                        roster.filter((row) => row.id !== caregiver.id)).
-                                        On 409 show error.message in the existing errorNote. */}
-                                {/* TODO 3: disable while a delete is in flight. Demo: add
-                                        a hire, delete that hire. Do not delete Marcus. */}
+                                <button
+                                    type="button"
+                                    className={styles.deleteButton}
+                                    disabled={deletingId !== null}
+                                    onClick={(event) => handleDeleteCaregiver(event, caregiver.id)}
+                                >
+                                    {deletingId === caregiver.id ? "Deleting..." : "Delete"}
+                                </button>
                             </li>
                         );
                     })}
