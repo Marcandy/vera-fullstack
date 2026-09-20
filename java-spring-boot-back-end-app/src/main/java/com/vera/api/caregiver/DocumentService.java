@@ -1,6 +1,7 @@
 package com.vera.api.caregiver;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import com.vera.api.IllegalTransitionException;
 import com.vera.api.InvalidInputException;
@@ -44,17 +45,22 @@ public class DocumentService {
     // itself cannot be reasoned about at a chosen instant, and it hides that
     // its answer changes underneath the caller.
     //
-    // TODO 1: received means the office actually HAS something, a signature it
-    //         captured or a file it was sent. Until then nothing can expire, so
-    //         an unreceived document is PENDING.
-    // TODO 2: a document with no expiry date does not lapse. A completed
-    //         background check is the real case, and modelling it as a very
-    //         distant date would be a lie that eventually comes true.
-    // TODO 3: expiry at or before `now` is EXPIRED, inside the renewal window
-    //         is EXPIRING, otherwise SIGNED. EXPIRED is the one a stored status
-    //         could never say, and the one that blocks clearance.
+    // Received means the office actually HAS something, a signature it captured
+    // or a file it was sent. Until then nothing can expire. A document with no
+    // expiry does not lapse at all, which is the completed background check.
     static DocumentStatus statusOf(Document document, Instant now) {
-        throw new UnsupportedOperationException("TODO: derive the document status");
+        boolean received = document.getSignature() != null || document.getFileName() != null;
+
+        if (!received) return DocumentStatus.PENDING;
+
+        Instant expiresAt = document.getExpiresAt();
+        if (expiresAt == null) return DocumentStatus.SIGNED;
+
+        if (!expiresAt.isAfter(now)) return DocumentStatus.EXPIRED;
+        if (!expiresAt.isAfter(now.plus(RENEWAL_WINDOW_DAYS, ChronoUnit.DAYS))) 
+            return DocumentStatus.EXPIRING;
+        
+        return DocumentStatus.SIGNED;
     }
 
     // The caregiver signing their own document, or the office signing for one
