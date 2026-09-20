@@ -10,24 +10,18 @@ import com.vera.api.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// The document rules, moved off the client. Until now they ran in
-// caregiverService.js, which means they were suggestions: anything that could
-// reach the API could ignore them. Read the comments above each mock verb in
-// react-front-end-app/src/services/caregiverService.js before writing these.
-// That file is the spec, and it already argues every rule below.
+// The document rules, moved off the client. They ran in caregiverService.js
+// until now, which made them suggestions: anything that could reach the API
+// could ignore them.
 //
-// Separate from CaregiverService because that one owns the caregiver as a
-// whole, hiring and firing. These four verbs are about one document's life.
-//
-// EVERY VERB follows the same two mechanical steps, so they are not numbered
-// below: start with load(caregiverId, documentId), end with
-// return reload(caregiverId). The numbered TODOs are only the decisions.
+// Every verb opens with load() and closes with reload(). open-in-view is false,
+// so the checklist has to come back through the join fetch or the controller
+// maps a closed session.
 @Service
 public class DocumentService {
 
-    // POLICY, not fact: how close to expiry a document starts asking to be
-    // renewed. Mirrors RENEWAL_WINDOW_DAYS in src/utils/documents.js. Both
-    // sides must agree or a pill and a refusal will contradict each other.
+    // POLICY, not fact. Mirrors RENEWAL_WINDOW_DAYS in src/utils/documents.js:
+    // both sides must agree or a pill and a refusal will contradict each other.
     private static final long RENEWAL_WINDOW_DAYS = 30;
 
     private final CaregiverRepository caregivers;
@@ -38,16 +32,10 @@ public class DocumentService {
         this.documents = documents;
     }
 
-    // The Java twin of documentStatus() in src/utils/documents.js:23.
-    //
-    // `now` is a parameter and is never read from the clock in here, for the
-    // same reason it is a parameter in the JS: a function that calls the clock
-    // itself cannot be reasoned about at a chosen instant, and it hides that
-    // its answer changes underneath the caller.
-    //
-    // Received means the office actually HAS something, a signature it captured
-    // or a file it was sent. Until then nothing can expire. A document with no
-    // expiry does not lapse at all, which is the completed background check.
+    // The Java twin of documentStatus() in src/utils/documents.js. `now` is a
+    // parameter and never a clock read, so the answer can be reasoned about at a
+    // chosen instant. Received means the office HAS something; no expiry date
+    // means the credential never lapses, which is the background check.
     static DocumentStatus statusOf(Document document, Instant now) {
         boolean received = document.getSignature() != null || document.getFileName() != null;
 
@@ -57,92 +45,109 @@ public class DocumentService {
         if (expiresAt == null) return DocumentStatus.SIGNED;
 
         if (!expiresAt.isAfter(now)) return DocumentStatus.EXPIRED;
-        if (!expiresAt.isAfter(now.plus(RENEWAL_WINDOW_DAYS, ChronoUnit.DAYS))) 
+        if (!expiresAt.isAfter(now.plus(RENEWAL_WINDOW_DAYS, ChronoUnit.DAYS))) {
             return DocumentStatus.EXPIRING;
-        
+        }
+
         return DocumentStatus.SIGNED;
     }
 
-    // The caregiver signing their own document, or the office signing for one
-    // they witnessed. Keyed by document id, not by name: a name is a label
-    // people correct, and signing the wrong row because someone fixed a typo is
-    // the kind of bug that never announces itself.
-    //
-    // The server reads the clock here, not the caller. A caller that could
-    // choose the instant could choose one where a lapsed card still looks
-    // signable.
-    //
-    // TODO 1: only a PENDING document is signable, anything else is an
-    //         IllegalTransitionException (409). Reject a blank signature
-    //         (InvalidInputException, 400), then set it and stamp receivedAt
-    //         from the server clock.
-    // TODO 2: EXPIRED gets its OWN message. A signature does not renew a lapsed
-    //         credential, and the only exit is recording a current one. Saying
-    //         "cannot sign a document that is expired" tells the office nothing
-    //         about what to do next; the mock's wording keeps the instruction.
+    // Keyed by document id, never by name: a name is a label people correct, and
+    // signing the wrong row because someone fixed a typo never announces itself.
+    // The server reads the clock, because a caller who could choose the instant
+    // could choose one where a lapsed card still looks signable.
     @Transactional
     public Caregiver sign(Long caregiverId, Long documentId, SignatureRequest request) {
-        throw new UnsupportedOperationException("TODO: sign a document");
+        if (request == null) {
+            throw new InvalidInputException("Signature request is required");
+        }
+
+        Document document = load(caregiverId, documentId);
+
+        // One clock read: the status that refuses and the timestamp that records
+        // cannot then disagree about when this happened.
+        Instant now = Instant.now();
+        DocumentStatus status = statusOf(document, now);
+
+        // EXPIRED gets its own message because a signature does not renew a
+        // lapsed credential. Naming the state without naming the exit tells the
+        // office nothing about what to do next.
+        if (status != DocumentStatus.PENDING) {
+            throw new IllegalTransitionException(
+                    status == DocumentStatus.EXPIRED
+                            ? "This document has expired. Signing does not renew it; record the new one instead."
+                            : "Cannot sign a document that is " + status.label());
+        }
+
+        String signature = blankToNull(request.signature());
+        if (signature == null) {
+            throw new InvalidInputException("Signature is required");
+        }
+
+        document.setSignature(signature);
+        document.setReceivedAt(now);
+
+        return reload(caregiverId);
     }
 
-    // The office recording a document directly. Unlike signing this accepts a
-    // document in ANY state, because it is both how a credential first arrives
-    // and how a lapsed one is replaced. That is the whole exit from EXPIRED, and
-    // it works the way the visit evidence rule works: the hold clears when the
-    // missing thing is supplied, never because someone dismissed it.
-    //
-    // TODO 1: a file name is required (400). An expiry is NOT, because a
-    //         document that never lapses is a real case, but one that IS sent
-    //         and already past is rejected: that would file a document straight
-    //         into the state it is meant to clear.
-    // TODO 2: copy the five metadata fields onto the live columns, stamp
-    //         receivedAt, then clearPendingSubmission(). Recording directly
-    //         SUPERSEDES what the caregiver sent in; leaving it pending would
-    //         let someone accept it later and overwrite this newer credential
-    //         with the older one it replaced.
+    // The office recording a document directly. Accepts a document in ANY state,
+    // because this is both how a credential first arrives and how a lapsed one is
+    // replaced, and it is the only exit from EXPIRED.
     @Transactional
     public Caregiver recordFile(Long caregiverId, Long documentId, DocumentFileRequest request) {
-        throw new UnsupportedOperationException("TODO: record a document file");
+        if (request == null) {
+            throw new InvalidInputException("Document request is required");
+        }
+
+        Document document = load(caregiverId, documentId);
+
+        String fileName = blankToNull(request.fileName());
+        if (fileName == null) {
+            throw new InvalidInputException("Choose a file to record");
+        }
+
+        Instant now = Instant.now();
+        Instant expiresAt = request.expiresAt();
+
+        // An expiry is optional: a document that never lapses is a real case, not
+        // a missing answer. One already past is not, because it would file a
+        // document straight into the state this call exists to clear.
+        if (expiresAt != null && !expiresAt.isAfter(now)) {
+            throw new InvalidInputException(
+                    "That expiry date has already passed; record a current document");
+        }
+
+        document.setFileName(fileName);
+        document.setFileSize(request.fileSize());
+        document.setFileType(request.fileType());
+        document.setIssuedAt(request.issuedAt());
+        document.setExpiresAt(expiresAt);
+        document.setReceivedAt(now);
+
+        // Recording directly SUPERSEDES anything the caregiver sent in. Leaving
+        // it pending would let someone accept it later and overwrite this newer
+        // credential with the older one it replaced.
+        document.clearPendingSubmission();
+
+        return reload(caregiverId);
     }
 
-    // The CAREGIVER sending in a renewal themselves. This is how the real
-    // products work: the aide photographs the new card rather than driving it to
-    // the office.
-    //
-    // It does NOT take effect. The submission sits beside the live document
-    // until someone at the agency accepts it, because the agency is what has to
-    // produce a valid credential at a state survey, and a credential that
-    // cleared itself is one nobody checked.
-    //
-    // TODO 1: same validations as recordFile, then write ONLY the pending_
-    //         columns. Touch no live field. Two things follow and both are the
-    //         point: renewing early cannot invalidate a card still in force, and
-    //         a lapsed caregiver stays lapsed until the office looks.
-    // TODO 2: stamp pendingSubmittedAt from the server clock. DocumentResponse
-    //         reads that field to decide whether the submission is null, so a
-    //         submission without it is invisible to the frontend.
+    // The caregiver sending in a renewal themselves. It does NOT take effect: the
+    // submission sits beside the live document until the office accepts it,
+    // because a credential that cleared itself is one nobody checked.
     @Transactional
     public Caregiver submitRenewal(Long caregiverId, Long documentId, DocumentFileRequest request) {
         throw new UnsupportedOperationException("TODO: submit a renewal");
     }
 
-    // The office accepting what was sent in. Only here does a submitted renewal
-    // become the credential of record.
-    //
-    // TODO 1: nothing pending is a 409, not a silent success. There is
-    //         deliberately no accept that invents evidence, for the same reason
-    //         no button resolves a visit missing its signature.
-    // TODO 2: promote the five pending values, null the signature and clear the
-    //         slot. receivedAt is the moment the caregiver SENT it, not the
-    //         moment you accepted it: checking the card is not when the agency
-    //         came into possession of it.
+    // The only step that makes a submitted renewal the credential of record.
     @Transactional
     public Caregiver acceptSubmission(Long caregiverId, Long documentId) {
         throw new UnsupportedOperationException("TODO: accept a submitted renewal");
     }
 
-    // Fails closed on identity: a document id that belongs to a different
-    // caregiver comes back empty and reads as not found, rather than letting one
+    // Fails closed on identity: a document belonging to a different caregiver
+    // comes back empty and reads as not found, rather than letting one
     // caregiver's URL act on another's record.
     private Document load(Long caregiverId, Long documentId) {
         return documents.findByIdAndCaregiver_Id(documentId, caregiverId)
@@ -150,10 +155,6 @@ public class DocumentService {
                         "Document " + documentId + " not found for caregiver " + caregiverId));
     }
 
-    // Re-reads through the join fetch so the controller can map the checklist
-    // after the transaction closes. open-in-view is false, so the managed
-    // entity's lazy documents would throw on the way out. Same fix
-    // CaregiverService.add uses, and the same lesson as findByIdWithPeople.
     private Caregiver reload(Long caregiverId) {
         return caregivers.findByIdWithDocuments(caregiverId)
                 .orElseThrow(() -> new NotFoundException("Caregiver " + caregiverId + " not found"));
