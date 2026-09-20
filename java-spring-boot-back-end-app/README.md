@@ -77,6 +77,9 @@ sub-resources named for the event that causes them rather than onto CRUD:
 | `addCaregiver(...)` | `POST /api/caregivers` |
 | `deleteCaregiver(id)` | `DELETE /api/caregivers/{id}` |
 | `signDocument(...)` | `POST /api/caregivers/{id}/documents/{docId}/signature` |
+| `uploadDocument(...)` | `POST /api/caregivers/{id}/documents/{docId}/file` |
+| `submitDocumentRenewal(...)` | `POST /api/caregivers/{id}/documents/{docId}/submission` |
+| `acceptDocumentSubmission(...)` | `POST /api/caregivers/{id}/documents/{docId}/submission/acceptance` |
 | `getPatients()` | `GET /api/patients` |
 
 `locationService` is the exception and never becomes an endpoint. It is a
@@ -190,6 +193,10 @@ those.
 - `POST /api/visits/{id}/check-in`, optional body, the server stamps the time
 - `POST /api/visits/{id}/check-out`, optional `assessment` and `signature`
 - `POST /api/visits/{id}/evidence`, optional `assessment` and `signature`
+- `POST /api/caregivers/{id}/documents/{docId}/signature`
+- `POST /api/caregivers/{id}/documents/{docId}/file`
+- `POST /api/caregivers/{id}/documents/{docId}/submission`
+- `POST /api/caregivers/{id}/documents/{docId}/submission/acceptance`
 
 All three writes go through `VisitService`, which holds the transition guards and
 the four field evidence rule. The controller calls the service and maps the

@@ -151,4 +151,39 @@ public class Document {
     public Instant getPendingSubmittedAt() {
         return pendingSubmittedAt;
     }
+
+    public void setPendingFileName(String pendingFileName) {
+        this.pendingFileName = pendingFileName;
+    }
+
+    public void setPendingFileSize(Integer pendingFileSize) {
+        this.pendingFileSize = pendingFileSize;
+    }
+
+    public void setPendingFileType(String pendingFileType) {
+        this.pendingFileType = pendingFileType;
+    }
+
+    public void setPendingIssuedAt(Instant pendingIssuedAt) {
+        this.pendingIssuedAt = pendingIssuedAt;
+    }
+
+    public void setPendingExpiresAt(Instant pendingExpiresAt) {
+        this.pendingExpiresAt = pendingExpiresAt;
+    }
+
+    public void setPendingSubmittedAt(Instant pendingSubmittedAt) {
+        this.pendingSubmittedAt = pendingSubmittedAt;
+    }
+
+    // All six move together, or the record claims a renewal is waiting with
+    // nothing in it. WHEN to clear is still the service's call.
+    public void clearPendingSubmission() {
+        this.pendingFileName = null;
+        this.pendingFileSize = null;
+        this.pendingFileType = null;
+        this.pendingIssuedAt = null;
+        this.pendingExpiresAt = null;
+        this.pendingSubmittedAt = null;
+    }
 }
