@@ -134,16 +134,76 @@ public class DocumentService {
 
     // The caregiver sending in a renewal themselves. It does NOT take effect: the
     // submission sits beside the live document until the office accepts it,
-    // because a credential that cleared itself is one nobody checked.
+    // because a credential that cleared itself is one nobody checked. Renewing
+    // early therefore cannot invalidate a card still in force, and a lapsed
+    // caregiver stays lapsed until someone looks.
     @Transactional
     public Caregiver submitRenewal(Long caregiverId, Long documentId, DocumentFileRequest request) {
-        throw new UnsupportedOperationException("TODO: submit a renewal");
+        if (request == null) {
+            throw new InvalidInputException("Document request is required");
+        }
+
+        Document document = load(caregiverId, documentId);
+
+        String fileName = blankToNull(request.fileName());
+        if (fileName == null) {
+            throw new InvalidInputException("Choose a file to send in");
+        }
+
+        Instant now = Instant.now();
+        Instant expiresAt = request.expiresAt();
+
+        if (expiresAt != null && !expiresAt.isAfter(now)) {
+            throw new InvalidInputException(
+                    "That expiry date has already passed; send in a current document");
+        }
+
+        // Only the pending columns. Every live field is left exactly as it was,
+        // which is the whole reason this verb is separate from recordFile.
+        document.setPendingFileName(fileName);
+        document.setPendingFileSize(request.fileSize());
+        document.setPendingFileType(request.fileType());
+        document.setPendingIssuedAt(request.issuedAt());
+        document.setPendingExpiresAt(expiresAt);
+
+        // DocumentResponse reads this field to decide whether submission is null,
+        // so a submission without it is invisible to the frontend.
+        document.setPendingSubmittedAt(now);
+
+        return reload(caregiverId);
     }
 
     // The only step that makes a submitted renewal the credential of record.
     @Transactional
     public Caregiver acceptSubmission(Long caregiverId, Long documentId) {
-        throw new UnsupportedOperationException("TODO: accept a submitted renewal");
+        Document document = load(caregiverId, documentId);
+
+        Instant submittedAt = document.getPendingSubmittedAt();
+
+        // No accept that invents evidence, for the same reason no button resolves
+        // a visit missing its signature.
+        if (submittedAt == null) {
+            throw new IllegalTransitionException(
+                    "There is nothing waiting to be accepted on this document");
+        }
+
+        // Read every pending value before the slot is cleared below.
+        document.setFileName(document.getPendingFileName());
+        document.setFileSize(document.getPendingFileSize());
+        document.setFileType(document.getPendingFileType());
+        document.setIssuedAt(document.getPendingIssuedAt());
+        document.setExpiresAt(document.getPendingExpiresAt());
+
+        // When the caregiver SENT it, not when you accepted it: checking the card
+        // is not when the agency came into possession of it.
+        document.setReceivedAt(submittedAt);
+
+        // The live credential is now a file somebody sent in, and the old
+        // signature attested to the document this one replaces.
+        document.setSignature(null);
+        document.clearPendingSubmission();
+
+        return reload(caregiverId);
     }
 
     // Fails closed on identity: a document belonging to a different caregiver
