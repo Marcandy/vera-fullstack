@@ -72,14 +72,14 @@ public class DocumentService {
     // choose the instant could choose one where a lapsed card still looks
     // signable.
     //
-    // TODO 1: only a PENDING document is signable. Anything else is an
-    //         IllegalTransitionException, which the advice maps to 409.
+    // TODO 1: only a PENDING document is signable, anything else is an
+    //         IllegalTransitionException (409). Reject a blank signature
+    //         (InvalidInputException, 400), then set it and stamp receivedAt
+    //         from the server clock.
     // TODO 2: EXPIRED gets its OWN message. A signature does not renew a lapsed
     //         credential, and the only exit is recording a current one. Saying
     //         "cannot sign a document that is expired" tells the office nothing
     //         about what to do next; the mock's wording keeps the instruction.
-    // TODO 3: reject a blank signature (InvalidInputException, 400), then set
-    //         it and stamp receivedAt from the server clock.
     @Transactional
     public Caregiver sign(Long caregiverId, Long documentId, SignatureRequest request) {
         throw new UnsupportedOperationException("TODO: sign a document");
@@ -91,13 +91,11 @@ public class DocumentService {
     // it works the way the visit evidence rule works: the hold clears when the
     // missing thing is supplied, never because someone dismissed it.
     //
-    // TODO 1: a file name is required (400). An expiry is NOT: leaving it blank
-    //         is how a document that never lapses gets recorded, which is a real
-    //         case and not a missing answer.
-    // TODO 2: when an expiry IS sent, reject one already in the past. Accepting
-    //         it would file a document straight into the state it is meant to
-    //         clear.
-    // TODO 3: copy the five metadata fields onto the live columns, stamp
+    // TODO 1: a file name is required (400). An expiry is NOT, because a
+    //         document that never lapses is a real case, but one that IS sent
+    //         and already past is rejected: that would file a document straight
+    //         into the state it is meant to clear.
+    // TODO 2: copy the five metadata fields onto the live columns, stamp
     //         receivedAt, then clearPendingSubmission(). Recording directly
     //         SUPERSEDES what the caregiver sent in; leaving it pending would
     //         let someone accept it later and overwrite this newer credential
@@ -116,13 +114,11 @@ public class DocumentService {
     // produce a valid credential at a state survey, and a credential that
     // cleared itself is one nobody checked.
     //
-    // TODO 1: same two validations as recordFile, a file name is required and a
-    //         sent expiry cannot already have passed.
-    // TODO 2: write ONLY the pending_ columns. Touch no live field. Two things
-    //         follow and both are the point: renewing early cannot invalidate a
-    //         card still in force, and a lapsed caregiver stays lapsed until the
-    //         office looks.
-    // TODO 3: stamp pendingSubmittedAt from the server clock. DocumentResponse
+    // TODO 1: same validations as recordFile, then write ONLY the pending_
+    //         columns. Touch no live field. Two things follow and both are the
+    //         point: renewing early cannot invalidate a card still in force, and
+    //         a lapsed caregiver stays lapsed until the office looks.
+    // TODO 2: stamp pendingSubmittedAt from the server clock. DocumentResponse
     //         reads that field to decide whether the submission is null, so a
     //         submission without it is invisible to the frontend.
     @Transactional
@@ -136,13 +132,10 @@ public class DocumentService {
     // TODO 1: nothing pending is a 409, not a silent success. There is
     //         deliberately no accept that invents evidence, for the same reason
     //         no button resolves a visit missing its signature.
-    // TODO 2: promote the five pending values onto the live fields, and set
-    //         receivedAt to the moment the caregiver SENT it, not the moment you
-    //         accepted it. Checking the card is not when the agency came into
-    //         possession of it.
-    // TODO 3: null the signature, then clear the submission slot. The live
-    //         credential is now a file somebody sent in, and the old signature
-    //         attested to the document this one replaces.
+    // TODO 2: promote the five pending values, null the signature and clear the
+    //         slot. receivedAt is the moment the caregiver SENT it, not the
+    //         moment you accepted it: checking the card is not when the agency
+    //         came into possession of it.
     @Transactional
     public Caregiver acceptSubmission(Long caregiverId, Long documentId) {
         throw new UnsupportedOperationException("TODO: accept a submitted renewal");
