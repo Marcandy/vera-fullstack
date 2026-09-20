@@ -6,19 +6,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// Documents hang off a caregiver, so the URLs nest under one. Separate class
-// from CaregiverController because that one is about the caregiver resource
-// and these are about one document's life.
+// Documents hang off a caregiver, so the URLs nest under one. No rules here:
+// every method hands the ids and the body to DocumentService and maps what
+// comes back. The 404 and the 409 arrive as exceptions the advice translates.
 //
-// NO RULES LIVE HERE. Every method loads nothing, decides nothing and validates
-// nothing: it hands the ids and the body to DocumentService and maps what comes
-// back. The 404 and the 409 both arrive as exceptions the advice already
-// translates.
-//
-// ⚠ Every endpoint returns the WHOLE CAREGIVER, not the document. MyDocuments
-// and CaregiverDetail both do setCaregiver(await verb(...)), so returning a
-// DocumentResponse would leave both pages rendering a caregiver-shaped hole.
-// That is what keeps the component files untouched by this PR.
+// Every endpoint returns the WHOLE CAREGIVER, not the document, because both
+// MyDocuments and CaregiverDetail call setCaregiver with the result. Returning
+// a DocumentResponse would leave each of them rendering a caregiver-shaped hole.
 @RestController
 @RequestMapping("/api/caregivers/{caregiverId}/documents")
 public class DocumentController {
@@ -29,45 +23,41 @@ public class DocumentController {
         this.documentService = documentService;
     }
 
-    // TODO 1: @PostMapping("/{documentId}/signature")
-    //         Body is a SignatureRequest. Return CaregiverResponse.from(...) of
-    //         what the service returns. A plain return is a 200, which is right:
-    //         nothing was created, an existing row was completed.
+    // 200, not 201: nothing was created, an existing row was completed.
+    @PostMapping("/{documentId}/signature")
     public CaregiverResponse sign(
             @PathVariable Long caregiverId,
             @PathVariable Long documentId,
-            @RequestBody SignatureRequest request) {
-        throw new UnsupportedOperationException("TODO: map the signature endpoint");
+            @RequestBody(required = false) SignatureRequest request) {
+        return CaregiverResponse.from(documentService.sign(caregiverId, documentId, request));
     }
 
-    // TODO 2: @PostMapping("/{documentId}/file")
-    //         This is the office recording a document directly, the mock's
-    //         uploadDocument. Body is a DocumentFileRequest.
+    // The office recording a document directly, the mock's uploadDocument.
+    @PostMapping("/{documentId}/file")
     public CaregiverResponse recordFile(
             @PathVariable Long caregiverId,
             @PathVariable Long documentId,
-            @RequestBody DocumentFileRequest request) {
-        throw new UnsupportedOperationException("TODO: map the record-file endpoint");
+            @RequestBody(required = false) DocumentFileRequest request) {
+        return CaregiverResponse.from(documentService.recordFile(caregiverId, documentId, request));
     }
 
-    // TODO 3: @PostMapping("/{documentId}/submission")
-    //         The caregiver sending in a renewal. Same body type as above and
-    //         deliberately a different endpoint, because the rules differ: this
-    //         one must not touch the live credential.
+    // Same body as recordFile and deliberately a different endpoint, because the
+    // rules differ: this one must not touch the live credential.
+    @PostMapping("/{documentId}/submission")
     public CaregiverResponse submitRenewal(
             @PathVariable Long caregiverId,
             @PathVariable Long documentId,
-            @RequestBody DocumentFileRequest request) {
-        throw new UnsupportedOperationException("TODO: map the submission endpoint");
+            @RequestBody(required = false) DocumentFileRequest request) {
+        return CaregiverResponse.from(
+                documentService.submitRenewal(caregiverId, documentId, request));
     }
 
-    // TODO 4: @PostMapping("/{documentId}/submission/acceptance")
-    //         No body at all: accepting carries no new information, it is the
-    //         office saying yes to what is already stored. Note there is no
-    //         @RequestBody parameter to add.
+    // No body: accepting carries no new information, it is the office saying yes
+    // to what is already stored.
+    @PostMapping("/{documentId}/submission/acceptance")
     public CaregiverResponse acceptSubmission(
             @PathVariable Long caregiverId,
             @PathVariable Long documentId) {
-        throw new UnsupportedOperationException("TODO: map the acceptance endpoint");
+        return CaregiverResponse.from(documentService.acceptSubmission(caregiverId, documentId));
     }
 }
