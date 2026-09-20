@@ -10,18 +10,13 @@ import com.vera.api.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// The document rules, moved off the client. They ran in caregiverService.js
-// until now, which made them suggestions: anything that could reach the API
-// could ignore them.
-//
-// Every verb opens with load() and closes with reload(). open-in-view is false,
-// so the checklist has to come back through the join fetch or the controller
-// maps a closed session.
+// The document rules. They ran in caregiverService.js until now, which made
+// them suggestions: anything that could reach the API could ignore them.
 @Service
 public class DocumentService {
 
-    // POLICY, not fact. Mirrors RENEWAL_WINDOW_DAYS in src/utils/documents.js:
-    // both sides must agree or a pill and a refusal will contradict each other.
+    // Mirrors RENEWAL_WINDOW_DAYS in src/utils/documents.js. Both sides must
+    // agree or a pill and a refusal will contradict each other.
     private static final long RENEWAL_WINDOW_DAYS = 30;
 
     private final CaregiverRepository caregivers;
@@ -34,8 +29,7 @@ public class DocumentService {
 
     // The Java twin of documentStatus() in src/utils/documents.js. `now` is a
     // parameter and never a clock read, so the answer can be reasoned about at a
-    // chosen instant. Received means the office HAS something; no expiry date
-    // means the credential never lapses, which is the background check.
+    // chosen instant.
     static DocumentStatus statusOf(Document document, Instant now) {
         boolean received = document.getSignature() != null || document.getFileName() != null;
 
@@ -52,8 +46,6 @@ public class DocumentService {
         return DocumentStatus.SIGNED;
     }
 
-    // Keyed by document id, never by name: a name is a label people correct, and
-    // signing the wrong row because someone fixed a typo never announces itself.
     // The server reads the clock, because a caller who could choose the instant
     // could choose one where a lapsed card still looks signable.
     @Transactional
@@ -64,14 +56,11 @@ public class DocumentService {
 
         Document document = load(caregiverId, documentId);
 
-        // One clock read: the status that refuses and the timestamp that records
-        // cannot then disagree about when this happened.
         Instant now = Instant.now();
         DocumentStatus status = statusOf(document, now);
 
-        // EXPIRED gets its own message because a signature does not renew a
-        // lapsed credential. Naming the state without naming the exit tells the
-        // office nothing about what to do next.
+        // EXPIRED gets its own message: a signature does not renew a lapsed
+        // credential, and naming the state without naming the exit is useless.
         if (status != DocumentStatus.PENDING) {
             throw new IllegalTransitionException(
                     status == DocumentStatus.EXPIRED
@@ -90,9 +79,8 @@ public class DocumentService {
         return reload(caregiverId);
     }
 
-    // The office recording a document directly. Accepts a document in ANY state,
-    // because this is both how a credential first arrives and how a lapsed one is
-    // replaced, and it is the only exit from EXPIRED.
+    // Accepts a document in ANY state: this is both how a credential arrives and
+    // how a lapsed one is replaced, and it is the only exit from EXPIRED.
     @Transactional
     public Caregiver recordFile(Long caregiverId, Long documentId, DocumentFileRequest request) {
         if (request == null) {
@@ -109,9 +97,8 @@ public class DocumentService {
         Instant now = Instant.now();
         Instant expiresAt = request.expiresAt();
 
-        // An expiry is optional: a document that never lapses is a real case, not
-        // a missing answer. One already past is not, because it would file a
-        // document straight into the state this call exists to clear.
+        // An expiry is optional, but one already past would file a document
+        // straight into the state this call exists to clear.
         if (expiresAt != null && !expiresAt.isAfter(now)) {
             throw new InvalidInputException(
                     "That expiry date has already passed; record a current document");
@@ -124,19 +111,17 @@ public class DocumentService {
         document.setExpiresAt(expiresAt);
         document.setReceivedAt(now);
 
-        // Recording directly SUPERSEDES anything the caregiver sent in. Leaving
-        // it pending would let someone accept it later and overwrite this newer
-        // credential with the older one it replaced.
+        // Recording SUPERSEDES anything pending, or accepting it later would
+        // overwrite this newer credential with the one it replaced.
         document.clearPendingSubmission();
 
         return reload(caregiverId);
     }
 
-    // The caregiver sending in a renewal themselves. It does NOT take effect: the
-    // submission sits beside the live document until the office accepts it,
-    // because a credential that cleared itself is one nobody checked. Renewing
-    // early therefore cannot invalidate a card still in force, and a lapsed
-    // caregiver stays lapsed until someone looks.
+    // Does NOT take effect: the submission waits beside the live document until
+    // the office accepts it, because a credential that cleared itself is one
+    // nobody checked. So renewing early cannot invalidate a card still in force,
+    // and a lapsed caregiver stays lapsed until someone looks.
     @Transactional
     public Caregiver submitRenewal(Long caregiverId, Long documentId, DocumentFileRequest request) {
         if (request == null) {
@@ -158,16 +143,14 @@ public class DocumentService {
                     "That expiry date has already passed; send in a current document");
         }
 
-        // Only the pending columns. Every live field is left exactly as it was,
-        // which is the whole reason this verb is separate from recordFile.
         document.setPendingFileName(fileName);
         document.setPendingFileSize(request.fileSize());
         document.setPendingFileType(request.fileType());
         document.setPendingIssuedAt(request.issuedAt());
         document.setPendingExpiresAt(expiresAt);
 
-        // DocumentResponse reads this field to decide whether submission is null,
-        // so a submission without it is invisible to the frontend.
+        // DocumentResponse keys `submission` off this field, so a renewal
+        // without it is invisible to the frontend.
         document.setPendingSubmittedAt(now);
 
         return reload(caregiverId);
@@ -180,41 +163,39 @@ public class DocumentService {
 
         Instant submittedAt = document.getPendingSubmittedAt();
 
-        // No accept that invents evidence, for the same reason no button resolves
-        // a visit missing its signature.
         if (submittedAt == null) {
             throw new IllegalTransitionException(
                     "There is nothing waiting to be accepted on this document");
         }
 
-        // Read every pending value before the slot is cleared below.
+        // Read the pending values before the slot is cleared below.
         document.setFileName(document.getPendingFileName());
         document.setFileSize(document.getPendingFileSize());
         document.setFileType(document.getPendingFileType());
         document.setIssuedAt(document.getPendingIssuedAt());
         document.setExpiresAt(document.getPendingExpiresAt());
 
-        // When the caregiver SENT it, not when you accepted it: checking the card
-        // is not when the agency came into possession of it.
+        // When the caregiver SENT it: checking the card is not when the agency
+        // came into possession of it.
         document.setReceivedAt(submittedAt);
 
-        // The live credential is now a file somebody sent in, and the old
-        // signature attested to the document this one replaces.
+        // The old signature attested to the document this one replaces.
         document.setSignature(null);
         document.clearPendingSubmission();
 
         return reload(caregiverId);
     }
 
-    // Fails closed on identity: a document belonging to a different caregiver
-    // comes back empty and reads as not found, rather than letting one
-    // caregiver's URL act on another's record.
+    // Fails closed on identity: a document belonging to another caregiver comes
+    // back empty and reads as not found.
     private Document load(Long caregiverId, Long documentId) {
         return documents.findByIdAndCaregiver_Id(documentId, caregiverId)
                 .orElseThrow(() -> new NotFoundException(
                         "Document " + documentId + " not found for caregiver " + caregiverId));
     }
 
+    // open-in-view is false, so the checklist has to come back through the join
+    // fetch or the controller maps a closed session.
     private Caregiver reload(Long caregiverId) {
         return caregivers.findByIdWithDocuments(caregiverId)
                 .orElseThrow(() -> new NotFoundException("Caregiver " + caregiverId + " not found"));

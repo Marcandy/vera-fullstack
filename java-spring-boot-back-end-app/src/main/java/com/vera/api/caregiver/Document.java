@@ -176,10 +176,8 @@ public class Document {
         this.pendingSubmittedAt = pendingSubmittedAt;
     }
 
-    // Empties the whole submission slot. All six fields move together or the
-    // record starts claiming a renewal is waiting with nothing in it, so this
-    // is one state change rather than six calls a caller can half finish. It
-    // decides nothing: WHEN a submission is cleared is the service's call.
+    // All six move together, or the record claims a renewal is waiting with
+    // nothing in it. WHEN to clear is still the service's call.
     public void clearPendingSubmission() {
         this.pendingFileName = null;
         this.pendingFileSize = null;

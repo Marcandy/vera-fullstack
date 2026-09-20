@@ -1,6 +1,5 @@
 package com.vera.api.caregiver;
 
-// The caregiver typing their own name. There is no date here on purpose: the
-// server stamps when a signature arrived, the same rule check-in follows.
+// No date here on purpose: the server stamps when a signature arrived.
 public record SignatureRequest(String signature) {
 }

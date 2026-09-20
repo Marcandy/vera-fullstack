@@ -6,13 +6,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// Documents hang off a caregiver, so the URLs nest under one. No rules here:
-// every method hands the ids and the body to DocumentService and maps what
-// comes back. The 404 and the 409 arrive as exceptions the advice translates.
+// No rules here: the ids and the body go to DocumentService, and the 404 and
+// 409 arrive as exceptions the advice translates.
 //
-// Every endpoint returns the WHOLE CAREGIVER, not the document, because both
-// MyDocuments and CaregiverDetail call setCaregiver with the result. Returning
-// a DocumentResponse would leave each of them rendering a caregiver-shaped hole.
+// Every endpoint returns the WHOLE CAREGIVER, because both pages call
+// setCaregiver with the result. A DocumentResponse would break them.
 @RestController
 @RequestMapping("/api/caregivers/{caregiverId}/documents")
 public class DocumentController {
@@ -32,7 +30,6 @@ public class DocumentController {
         return CaregiverResponse.from(documentService.sign(caregiverId, documentId, request));
     }
 
-    // The office recording a document directly, the mock's uploadDocument.
     @PostMapping("/{documentId}/file")
     public CaregiverResponse recordFile(
             @PathVariable Long caregiverId,
@@ -41,8 +38,6 @@ public class DocumentController {
         return CaregiverResponse.from(documentService.recordFile(caregiverId, documentId, request));
     }
 
-    // Same body as recordFile and deliberately a different endpoint, because the
-    // rules differ: this one must not touch the live credential.
     @PostMapping("/{documentId}/submission")
     public CaregiverResponse submitRenewal(
             @PathVariable Long caregiverId,
@@ -52,8 +47,7 @@ public class DocumentController {
                 documentService.submitRenewal(caregiverId, documentId, request));
     }
 
-    // No body: accepting carries no new information, it is the office saying yes
-    // to what is already stored.
+    // No body: accepting carries no new information.
     @PostMapping("/{documentId}/submission/acceptance")
     public CaregiverResponse acceptSubmission(
             @PathVariable Long caregiverId,

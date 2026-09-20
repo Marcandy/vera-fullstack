@@ -6,10 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DocumentRepository extends JpaRepository<Document, Long> {
 
-    // Scoped to the caregiver in the path rather than looked up by document id
-    // alone. A bare findById would let POST /caregivers/1/documents/19/signature
-    // sign caregiver 5's lapsed card, because the id in the path would be
-    // decoration instead of identity. A mismatch comes back empty, which the
-    // service turns into a 404.
+    // Scoped to the caregiver in the path. A bare findById would let
+    // /caregivers/1/documents/19 act on caregiver 5's record.
     Optional<Document> findByIdAndCaregiver_Id(Long id, Long caregiverId);
 }
