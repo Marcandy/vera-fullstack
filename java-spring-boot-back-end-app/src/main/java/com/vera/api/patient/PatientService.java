@@ -1,5 +1,7 @@
 package com.vera.api.patient;
 
+import static com.vera.api.Inputs.blankToNull;
+
 import com.vera.api.InvalidInputException;
 
 import org.springframework.stereotype.Service;
@@ -37,10 +39,6 @@ public class PatientService {
 
         Patient patient = new Patient(name, address, phone, standingConcerns);
         return patients.save(patient);
-    }
-
-    private static String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
     }
 
     private static void validateLength(String value, int maxLength, String field) {
