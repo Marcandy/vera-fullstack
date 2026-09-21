@@ -1,5 +1,7 @@
 package com.vera.api.caregiver;
 
+import static com.vera.api.Inputs.blankToNull;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -199,9 +201,5 @@ public class DocumentService {
     private Caregiver reload(Long caregiverId) {
         return caregivers.findByIdWithDocuments(caregiverId)
                 .orElseThrow(() -> new NotFoundException("Caregiver " + caregiverId + " not found"));
-    }
-
-    private static String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
     }
 }

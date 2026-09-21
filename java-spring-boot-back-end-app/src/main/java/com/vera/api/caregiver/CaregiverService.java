@@ -1,5 +1,7 @@
 package com.vera.api.caregiver;
 
+import static com.vera.api.Inputs.blankToNull;
+
 import com.vera.api.IllegalTransitionException;
 import com.vera.api.InvalidInputException;
 import com.vera.api.NotFoundException;
@@ -59,9 +61,5 @@ public class CaregiverService {
         }
 
         caregivers.delete(caregiver);
-    }
-
-    private static String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
     }
 }

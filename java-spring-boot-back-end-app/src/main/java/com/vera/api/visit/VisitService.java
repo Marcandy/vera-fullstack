@@ -1,5 +1,7 @@
 package com.vera.api.visit;
 
+import static com.vera.api.Inputs.blankToNull;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -238,10 +240,5 @@ public class VisitService {
                 && visit.getCheckOutTime() != null
                 && visit.getAssessment() != null
                 && visit.getSignature() != null;
-    }
-
-    // Empty is not evidence, and the client reads null to mean missing.
-    private static String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
     }
 }
