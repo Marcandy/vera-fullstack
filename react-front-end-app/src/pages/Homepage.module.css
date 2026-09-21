@@ -15,14 +15,19 @@
 
 /* Reproduces what background-size and background-position did: one value sets
    the width and the intrinsic ratio carries the height, centred in the padding
-   box. pointer-events off so it can never catch a click meant for the card. */
+   box. pointer-events off so it can never catch a click meant for the card.
+
+   Fluid to 95% of the width, capped at 1600px. The cap exists because this is
+   a raster now: the file is 2200px, so 1600 renders it at about 1.4x. Past
+   2200 it would upscale and blur. Softness is invisible on a mark sitting at
+   20% opacity, which is why the cap buys width rather than a heavier file. */
 .watermark {
     position: absolute;
     z-index: -1;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: min(95%, 1100px);
+    width: min(95%, 1600px);
     height: auto;
     pointer-events: none;
     user-select: none;
