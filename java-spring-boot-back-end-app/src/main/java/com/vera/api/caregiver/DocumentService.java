@@ -99,12 +99,8 @@ public class DocumentService {
         Instant now = Instant.now();
         Instant expiresAt = request.expiresAt();
 
-        // An expiry is optional, but one already past would file a document
-        // straight into the state this call exists to clear.
-        if (expiresAt != null && !expiresAt.isAfter(now)) {
-            throw new InvalidInputException(
-                    "That expiry date has already passed; record a current document");
-        }
+        requireFutureExpiry(expiresAt, now,
+                "That expiry date has already passed; record a current document");
 
         document.setFileName(fileName);
         document.setFileSize(request.fileSize());
@@ -140,10 +136,8 @@ public class DocumentService {
         Instant now = Instant.now();
         Instant expiresAt = request.expiresAt();
 
-        if (expiresAt != null && !expiresAt.isAfter(now)) {
-            throw new InvalidInputException(
-                    "That expiry date has already passed; send in a current document");
-        }
+        requireFutureExpiry(expiresAt, now,
+                "That expiry date has already passed; send in a current document");
 
         document.setPendingFileName(fileName);
         document.setPendingFileSize(request.fileSize());
@@ -201,5 +195,15 @@ public class DocumentService {
     private Caregiver reload(Long caregiverId) {
         return caregivers.findByIdWithDocuments(caregiverId)
                 .orElseThrow(() -> new NotFoundException("Caregiver " + caregiverId + " not found"));
+    }
+
+    // An expiry is optional, but one already past would file a document
+    // straight into the state the call exists to clear. The wording differs
+    // between recording one and sending one in, so the message comes from the
+    // caller.
+    private static void requireFutureExpiry(Instant expiresAt, Instant now, String message) {
+        if (expiresAt != null && !expiresAt.isAfter(now)) {
+            throw new InvalidInputException(message);
+        }
     }
 }
