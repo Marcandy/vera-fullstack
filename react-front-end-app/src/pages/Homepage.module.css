@@ -1,15 +1,31 @@
 /* standalone screen: rendered outside Layout, so it owns its own frame.
-   The watermark is a background image, so it can never sit on top of
-   content or catch a click; its colors and tilt live in the asset itself */
+   The watermark is a real <img> rather than a background image. isolation
+   makes this a stacking context, which is what lets the mark sit at z-index
+   -1: above the page's own background and below every piece of content,
+   exactly where a background image sat, without any other element needing a
+   z-index of its own. */
 .page {
+    position: relative;
+    isolation: isolate;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     padding: 24px 32px;
-    background-image: url(../assets/vera-mark.svg);
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: min(95%, 1100px);
+}
+
+/* Reproduces what background-size and background-position did: one value sets
+   the width and the intrinsic ratio carries the height, centred in the padding
+   box. pointer-events off so it can never catch a click meant for the card. */
+.watermark {
+    position: absolute;
+    z-index: -1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(95%, 1100px);
+    height: auto;
+    pointer-events: none;
+    user-select: none;
 }
 
 .brand {
