@@ -157,3 +157,29 @@
     border-radius: 10px;
     padding: 24px;
 }
+
+.headerRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+/* Outlined rather than filled so it does not compete with the submit button
+   inside the form it opens. */
+.toggleButton {
+    background: none;
+    color: var(--vera-primary-dark);
+    border: 1px solid var(--vera-primary);
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.toggleButton:hover {
+    background-color: rgba(63, 124, 172, 0.08);
+}

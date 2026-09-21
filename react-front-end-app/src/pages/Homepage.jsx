@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "./Homepage.module.css";
+import veraMark from "../assets/vera-mark.png";
 import { useNavigate } from "react-router";
 import Footer from "../components/Footer";
 import { useSession } from "../context/sessionContext";
@@ -33,6 +34,14 @@ const Homepage = () => {
     }
     return (
         <div className={styles.page}>
+            {/* The alt describes the graphic rather than restating the brand,
+                so a screen reader does not read "Vera" twice in a row with the
+                <h1> immediately below it. */}
+            <img
+                className={styles.watermark}
+                src={veraMark}
+                alt="The Vera mark: a checkmark inside a rounded outline"
+            />
             <h1 className={styles.brand}>Vera</h1>
 
             <section className={styles.home}>
