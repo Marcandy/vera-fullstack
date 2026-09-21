@@ -25,7 +25,7 @@ const EVIDENCE_LABELS = [
 
 const CaregiverVisit = () => {
     const { visitId } = useParams();
-    const { user } = useSession();
+    const { user, loading: sessionLoading } = useSession();
 
     // This page is reached from two directions, so back means two things. An
     // admin arrived from the visit's read surface; a caregiver arrived from
@@ -111,7 +111,10 @@ const CaregiverVisit = () => {
         }
     }
 
-    if (loading) return (<p>Loading...</p>);
+    // sessionLoading as well as loading: the visit comes back from the API in
+    // milliseconds while the session is still rehydrating, and the ownership
+    // check below would read a null user and refuse a visit that is yours.
+    if (sessionLoading || loading) return (<p>Loading...</p>);
 
     // A caregiver standing at a door needs to know the difference between
     // "this visit is not yours" and "we could not reach the office".
@@ -123,6 +126,14 @@ const CaregiverVisit = () => {
     );
 
     if (!visit) return (<p>Visit not found. <Link to="/visits">Back to visits</Link></p>);
+
+    // The visit id comes from the URL, so without this a caregiver could type a
+    // colleague's visit and check it out. Not-found rather than a refusal,
+    // because whose visit it is is not theirs to learn. An admin reaches this
+    // page deliberately, from the visit's read surface.
+    if (!isAdmin && visit.caregiverId !== user?.caregiverId) {
+        return (<p>Visit not found. <Link to="/my-visits">Back to my visits</Link></p>);
+    }
 
     const missingSignature = !signature.trim();
     const showNoSignatureWarning = confirmNoSignature && missingSignature;
