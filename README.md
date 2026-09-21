@@ -69,6 +69,13 @@ Every transition has a cause: check-in, check-out with an evidence check, eviden
 
 These rules currently run in the browser, which means they are suggestions. Moving them into the Java service layer is the point of Unit 2.
 
+## Design
+
+- **[Wireframes](https://excalidraw.com/#json=FLy6MARY_MX3iJbQrI3oo,AKViD2M9g4vu4KKjjCux-g)**: the screens sketched before any of them were built.
+- **[Entity relationship diagram](https://docs.google.com/document/d/16cmTrZ2ThOaQ_p195pYHjQpcg0QqTUm1ehzyRT8ldaw/edit?usp=sharing)**: six tables, `USERS`, `CAREGIVERS`, `PATIENTS`, `VISITS`, `DOCUMENTS` and `CLAIMS`.
+
+Two decisions in the ERD are worth the click. `USERS` holds the logins for both roles with a nullable `caregiver_id`, rather than making administrators caregiver rows: an administrator does not deliver care, and putting her in `CAREGIVERS` would put her on the roster, make her schedulable, and block her from working for want of a TB test. And a renewal a caregiver sends in is a set of `pending_` columns on `DOCUMENTS` rather than a table of its own, because it is a one to zero-or-one relationship and the live credential has to stay untouched until the office accepts it.
+
 ## Architecture
 
 Paths below are relative to `react-front-end-app/`.
