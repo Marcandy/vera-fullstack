@@ -16,8 +16,10 @@ npm run dev
 
 Production build: `npm run build`. Lint: `npx eslint .`
 
-Once the API exists, start it first. Vite proxies `/api` to it so the browser
-sees a single origin in development and CORS stays a production concern.
+Start the API first, from `java-spring-boot-back-end-app`. Vite proxies `/api`
+to it on port 8080, so the browser sees a single origin in development and CORS
+stays a production concern. Without it running, every page renders its
+could-not-load state.
 
 Open **this folder** in VS Code, not the repository root.
 

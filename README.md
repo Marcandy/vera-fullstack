@@ -2,7 +2,7 @@
 
 Vera is a workspace for small home care agencies: one place to manage visits, caregivers, and the record of care each patient receives. Every visit is backed by evidence (who was there, when, and what care was delivered), so the moment a visit is verified, the claim is ready to submit. No chasing paperwork, no double data entry.
 
-**Live demo:** [vera-homecare.vercel.app](https://vera-homecare.vercel.app)
+**Running the full stack is local**, and the steps are below. [vera-homecare.vercel.app](https://vera-homecare.vercel.app) is the Unit 1 front end deployed on its own: it runs on in-memory fixtures and does not reach this API.
 
 ## Why
 
@@ -23,7 +23,7 @@ vera-fullstack
 
 **`react-front-end-app`** is the Unit 1 project: React with Vite, React Router and CSS Modules. All data access already runs through a service layer, so components never touch data directly.
 
-**`java-spring-boot-back-end-app`** is the Unit 2 project: Java, Spring Boot and MySQL. It replaces that service layer's mock internals, which is exactly what the layer was built to allow, and it is where the business rules move to. A rule the client enforces is not a rule.
+**`java-spring-boot-back-end-app`** is the Unit 2 project: Java, Spring Boot and MySQL. It replaced that service layer's mock internals, which is exactly what the layer was built to allow, and it holds the business rules. A rule the client enforces is not a rule.
 
 Open each half in its own IDE rather than opening this repository as a whole: the Spring Boot project in IntelliJ, the React project in VS Code. Each folder has its own README with the detail.
 
@@ -67,7 +67,7 @@ Every transition has a cause: check-in, check-out with an evidence check, eviden
 2. Only supplying the missing evidence clears a flag. There is no admin override, because clicking a button does not create a signature.
 3. Timestamps are stamped by the system when the event happens, never typed by a user. A typed timestamp would be fabricated evidence.
 
-These rules currently run in the browser, which means they are suggestions. Moving them into the Java service layer is the point of Unit 2.
+All three run in the Java service layer, in `VisitService` and `DocumentService`. They used to run in the browser, where anything that could reach the API could ignore them, which is to say they were suggestions rather than rules.
 
 ## Design
 
@@ -103,9 +103,32 @@ Paths below are relative to `react-front-end-app/`.
 
 ## Running it
 
-The front end runs on its own today: see `react-front-end-app/README.md`. Data comes from in-memory fixtures behind the service layer and resets on refresh.
+You need Java 21, Maven (the wrapper is included), Node 20 or later, and a local MySQL.
 
-Once the API exists, start it first and the front end second. MySQL replaces those fixtures, and nothing above the service layer changes.
+**1. Create the database.**
+
+```
+CREATE DATABASE vera;
+```
+
+**2. Start the API**, from `java-spring-boot-back-end-app`. Copy `.env.example` to `.env` and put your MySQL username and password in it, then:
+
+```
+./mvnw spring-boot:run
+```
+
+It serves on `http://localhost:8080`, creates its tables with Hibernate on first start, and loads the demo data from `src/main/resources/data.sql` on every start.
+
+**3. Start the front end**, from `react-front-end-app`:
+
+```
+npm install
+npm run dev
+```
+
+It serves on `http://localhost:5173` and proxies `/api` to the API, so the browser sees one origin and CORS stays a production concern.
+
+Sign in with `denise@agency.com` (administrator) or `marcus@agency.com` (caregiver). Any password is accepted: the demo sign-in is not real authentication.
 
 ## Manual testing
 
