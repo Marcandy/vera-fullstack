@@ -99,6 +99,11 @@ const Visits = () => {
     const [serviceType, setServiceType] = useState("");
     const [estimatedCost, setEstimatedCost] = useState("");
     const [scheduling, setScheduling] = useState(false);
+
+    // The schedule form is a create action, not part of reading the list, so it
+    // stays collapsed until asked for. Same disclosure shape as the document
+    // forms on CaregiverDetail.
+    const [showSchedule, setShowSchedule] = useState(false);
     const [scheduleError, setScheduleError] = useState(null);
 
     const reload = () => { reloadCounts(); reloadList(); };
@@ -124,6 +129,7 @@ const Visits = () => {
             setAppointmentLocal("");
             setServiceType("");
             setEstimatedCost("");
+            setShowSchedule(false);
         } catch (error) {
             setScheduleError(error.message);
         } finally {
@@ -187,10 +193,19 @@ const Visits = () => {
                         <option value="date">Soonest first</option>
                     </select>
                 </label>
+                <button
+                    type="button"
+                    className={styles.toggleButton}
+                    onClick={() => setShowSchedule((open) => !open)}
+                    aria-expanded={showSchedule}
+                    aria-controls="schedule-form"
+                >
+                    {showSchedule ? "Cancel" : "Schedule a visit"}
+                </button>
             </div>
 
-            <form className={styles.scheduleForm} onSubmit={handleSchedule}>
-                <h4 className={styles.scheduleTitle}>Schedule a visit</h4>
+            {showSchedule && (
+            <form id="schedule-form" className={styles.scheduleForm} onSubmit={handleSchedule}>
                 <fieldset className={styles.formFields} disabled={scheduling} aria-label="New visit details">
                     <div className={styles.fieldRow}>
                         <div className={styles.field}>
@@ -277,6 +292,7 @@ const Visits = () => {
                     {scheduling ? "Scheduling..." : "Schedule visit"}
                 </button>
             </form>
+            )}
 
             <div className={styles.searchRow}>
                 <label className={styles.searchLabel} htmlFor="visit-search">

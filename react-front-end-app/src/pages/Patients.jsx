@@ -14,6 +14,10 @@ const Patients = () => {
     const [phone, setPhone] = useState("");
     const [standingConcerns, setStandingConcerns] = useState("");
     const [adding, setAdding] = useState(false);
+
+    // Collapsed by default: the roster is what this page is for, and the create
+    // form pushed it below the fold.
+    const [showAdd, setShowAdd] = useState(false);
     const [addError, setAddError] = useState(null);
 
     async function handleAddPatient(event) {
@@ -28,6 +32,7 @@ const Patients = () => {
             setAddress("");
             setPhone("");
             setStandingConcerns("");
+            setShowAdd(false);
         } catch (error) {
             setAddError(error.message);
         } finally {
@@ -46,10 +51,21 @@ const Patients = () => {
 
     return (
         <section className={styles.patients}>
-            <h3 className={styles.title}>Patients</h3>
+            <div className={styles.headerRow}>
+                <h3 className={styles.title}>Patients</h3>
+                <button
+                    type="button"
+                    className={styles.toggleButton}
+                    onClick={() => setShowAdd((open) => !open)}
+                    aria-expanded={showAdd}
+                    aria-controls="add-patient-form"
+                >
+                    {showAdd ? "Cancel" : "Add a patient"}
+                </button>
+            </div>
 
-            <form className={styles.addForm} onSubmit={handleAddPatient}>
-                <h4 className={styles.addTitle}>Add a patient</h4>
+            {showAdd && (
+            <form id="add-patient-form" className={styles.addForm} onSubmit={handleAddPatient}>
                 <fieldset className={styles.formFields} disabled={adding} aria-label="New patient details">
                     <div className={styles.fieldRow}>
                         <div className={styles.field}>
@@ -106,6 +122,7 @@ const Patients = () => {
                     {adding ? "Adding..." : "Add Patient"}
                 </button>
             </form>
+            )}
 
             {patientList.length === 0 ? (
                 <p className={styles.emptyState}>
