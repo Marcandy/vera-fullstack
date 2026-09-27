@@ -1,7 +1,6 @@
 package com.vera.api.caregiver;
 
-// DERIVED, never a column: a stored status disagrees with the record the moment
-// a date passes. Names match DOCUMENT_STATUS in src/utils/status.js.
+// Derived, never a column. Names match DOCUMENT_STATUS in src/utils/status.js.
 public enum DocumentStatus {
     PENDING("pending"),
     SIGNED("signed"),

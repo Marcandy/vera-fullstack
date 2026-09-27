@@ -14,9 +14,7 @@ import { useAsyncData } from "../hooks/useAsyncData";
 import { useDebounced } from "../hooks/useDebounced";
 import { attentionFor } from "../utils/attention";
 
-// Denise's attention order, lowest rank first. This is a property of THIS
-// screen, not of the collection, so it lives here and not in the service:
-// the first two need her to act, the rest are just status.
+// This screen's attention order; the first two need Denise to act.
 const STATUS_RANK = {
     [VISIT_STATUS.NEEDS_REVIEW]: 0,
     [VISIT_STATUS.READY_TO_BILL]: 1,
@@ -25,17 +23,12 @@ const STATUS_RANK = {
     [VISIT_STATUS.BILLED]: 4,
 };
 
-// An unrecognized status means a broken pipeline, not a real position.
-// It parks at the end; StatusPill is what fails visibly, by rendering bare.
 const RANK_UNKNOWN = Number.MAX_SAFE_INTEGER;
 
-// The status value is an identifier. These sentences are read by a person, and
-// they read mid-sentence, so the label is lowercased rather than title cased.
+// Lowercased because these labels are read mid sentence.
 const statusText = (status) => (VISIT_STATUS_LABEL[status] ?? status).toLowerCase();
 
-// Oldest appointment first: the longest-waiting visit is the most urgent one
-// in its group. ISO strings compare lexicographically, which is the reason
-// the visit shape stores them as strings.
+// Oldest first: the longest-waiting visit is the most urgent in its group.
 const byDate = (a, b) => a.appointmentTime.localeCompare(b.appointmentTime);
 
 const byAttention = (a, b) => {
@@ -49,41 +42,25 @@ const byAttention = (a, b) => {
 
 const SORTS = { attention: byAttention, date: byDate };
 
-// Long enough that a typed word is one request rather than five, short enough
-// that it still feels like the list is keeping up.
 const SEARCH_DEBOUNCE_MS = 250;
 
 const Visits = () => {
-    // Ticks so a visit crossing its threshold flags itself without a reload.
     const now = useNow();
 
-    // Filter, search and sort live in the URL, not in useState. This is VIEW
-    // state: what am I looking at. That makes it shareable, bookmarkable, and
-    // it restores on the back button for free. Note the opposite call on
-    // MyVisits, where the caregiver id must NEVER come from the URL: that is
-    // identity, and identity a user can type is an authorization hole. Same
-    // app, opposite answers, for different reasons.
+    // View state lives in the URL, so it is shareable and survives the back button.
+    // MyVisits never reads its caregiver id from the URL: that is identity.
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // The URL is untrusted input. ?status=bogus falls back to unfiltered
-    // rather than rendering a blank list with nothing to explain it.
     const activeStatus = parseVisitStatus(searchParams.get("status"));
     const activeSort = SORTS[searchParams.get("sort")] ? searchParams.get("sort") : "attention";
     const query = searchParams.get("q") ?? "";
 
-    // Only the search box is typed into, so only the search box waits. A status
-    // chip is a click, not a keystroke, so it stays immediate: that falls out of
-    // debouncing the VALUE rather than the request.
     const debouncedQuery = useDebounced(query, SEARCH_DEBOUNCE_MS);
 
-    // The counts describe the whole collection, so they do NOT re-run when the
-    // filter changes. Deriving them from the filtered list stopped being
-    // possible when filtering moved to the service: every chip would report the
-    // filtered total or zero.
+    // Counts cover the whole collection, so they ignore the filter.
     const { data: counts, reload: reloadCounts } = useAsyncData(
         (signal) => getVisitCounts({ signal }), []);
 
-    // The list is a separate request because it answers a separate question.
     const { data: visitList, error: loadError, loading, stale, reload: reloadList } = useAsyncData(
         (signal) => getVisits({ status: activeStatus, q: debouncedQuery }, { signal }),
         [activeStatus, debouncedQuery]);
@@ -100,9 +77,6 @@ const Visits = () => {
     const [estimatedCost, setEstimatedCost] = useState("");
     const [scheduling, setScheduling] = useState(false);
 
-    // The schedule form is a create action, not part of reading the list, so it
-    // stays collapsed until asked for. Same disclosure shape as the document
-    // forms on CaregiverDetail.
     const [showSchedule, setShowSchedule] = useState(false);
     const [scheduleError, setScheduleError] = useState(null);
 
@@ -137,9 +111,7 @@ const Visits = () => {
         }
     }
 
-    // Replace rather than push: filtering is not a place you navigated to,
-    // so twelve chip clicks should not mean twelve presses of the back button
-    // to leave the page.
+    // Replace, not push: twelve chip clicks should not mean twelve back presses.
     const setParam = (key, value) => {
         const next = new URLSearchParams(searchParams);
         if (value === null || value === "") next.delete(key);
@@ -156,19 +128,12 @@ const Visits = () => {
 
     if (loading) return <p>Loading...</p>
 
-    // Out of date for either reason: the typed query has not settled yet, or it
-    // has and the answer is still on its way. Both mean the rows on screen
-    // answer an older question, and both are derived rather than flagged.
+    // Stale for either reason: the query has not settled, or its answer has not arrived.
     const isRefreshing = stale || query !== debouncedQuery;
 
-    // Sort a COPY. The service hands back its own array, but sorting a result in
-    // place is still the habit that reorders a shared cache the day one exists.
     const ordered = [...visitList].sort(SORTS[activeSort]);
 
-    // Two different empty results needing two different explanations: an agency
-    // with no visits at all, and a filter that happens to match none. Decided
-    // from the filter itself rather than from the counts, which arrive in their
-    // own request and may not have landed yet.
+    // Decided from the filter, not the counts, which may not have landed yet.
     const isFiltered = activeStatus !== null || query !== "";
 
     const clearFilters = () => {
@@ -306,9 +271,6 @@ const Visits = () => {
                     value={query}
                     onChange={(e) => setParam("q", e.target.value)}
                 />
-                {/* The list keeps the previous results while a new query is in
-                    flight rather than flashing Loading on every keystroke, so
-                    this is what says the screen is not simply stale. */}
                 <span className={styles.searchStatus} aria-live="polite">
                     {isRefreshing ? "Searching..." : ""}
                 </span>

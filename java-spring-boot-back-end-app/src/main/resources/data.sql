@@ -1,20 +1,5 @@
--- Demo data, loaded on startup by Spring after Hibernate has created the tables.
---
--- Explicit ids throughout, so the README test table and the demo script keep
--- matching. People are INSERT IGNORE: already there means leave them alone.
--- Visits are deleted and rewritten, because their times are relative and
--- INSERT IGNORE would evaluate them once and never again.
---
--- TIMES ARE STORED UTC, which is what the application reads and writes.
--- Philadelphia runs four hours behind UTC on daylight time, so a 2:00 PM visit
--- is written here as 18:00. Visits happening right now are offsets from
--- UTC_TIMESTAMP() instead, because both attention thresholds are measured in
--- minutes from an event rather than from a wall clock time.
---
--- Offsets, never literal dates. A seed full of fixed dates is honest the week
--- it is written: this one went two months stale once, and by then every
--- scheduled visit read as a late check-in and every visit in progress as a
--- forgotten check-out. Everything flagged reads the same as nothing flagged.
+-- Demo data. Explicit ids keep the README and the demo script matching.
+-- Times are UTC offsets from now, never literal dates, so the seed never goes stale.
 
 INSERT IGNORE INTO patients (id, name, phone, address, standing_concerns) VALUES
 (1,  'Eleanor Whitfield', '215-555-0231', '1642 S Broad St, Philadelphia, PA 19145',   'Unsteady on stairs after dark. Prefers help with bathing earlier in the day.'),
@@ -35,9 +20,7 @@ INSERT IGNORE INTO caregivers (id, name, phone) VALUES
 (4, 'Luis Rivera',     '215-555-0163'),
 (5, 'Angela Brooks',   '215-555-0129');
 
--- Seed checklist for the five people. Offsets from UTC_DATE so the expiring
--- and lapsed cases stay on the right side of today. API-created hires keep
--- their rows: only caregivers 1 to 5 are rewritten.
+-- Only caregivers 1 to 5 are rewritten; API-created hires keep their rows.
 DELETE FROM documents WHERE caregiver_id BETWEEN 1 AND 5;
 
 INSERT INTO documents
@@ -64,12 +47,8 @@ VALUES
 (19, 5, 'CPR Certification',   TIMESTAMP(UTC_DATE() - INTERVAL 742 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() - INTERVAL 12 DAY, '23:59:00'),  NULL,           'angela-cpr-card.pdf',          192845, 'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 740 DAY, '10:16:00')),
 (20, 5, 'TB Test',             NULL,                                                NULL,                                                NULL,           NULL,                          NULL,   NULL,               NULL);
 
--- Rewritten every start. The offsets below are evaluated at INSERT time, so
--- skipping the insert freezes the demo day on whatever day the rows first
--- landed. Deleting first is what keeps today actually today.
---
--- The cost: a check-in written through the API does not survive a restart. Set
--- spring.sql.init.mode=never while developing a write if that gets in the way.
+-- Rewritten every start so the offsets stay relative to today. A write through
+-- the API does not survive a restart.
 DELETE FROM claims;
 DELETE FROM visits;
 
@@ -128,8 +107,6 @@ INSERT INTO visits
  NULL, NULL, NULL, NULL,
  'Wants help reorganizing the medication cabinet; labels are too small to read.'),
 
--- Older billed work, so the patient records and the caregiver histories have
--- something in them beyond yesterday.
 (11, 1, 1, TIMESTAMP(UTC_DATE() - INTERVAL 15 DAY, '18:00:00'), 'BILLED', 'PERSONAL_CARE', 34.00,
  TIMESTAMP(UTC_DATE() - INTERVAL 15 DAY, '17:58:00'), TIMESTAMP(UTC_DATE() - INTERVAL 15 DAY, '19:04:00'),
  'Bathing and lunch as usual. Ankle swelling unchanged from last week.',
@@ -151,8 +128,6 @@ INSERT INTO visits
  'Full physical therapy set completed. Reports stiffness in the morning only.',
  'Harold Brennan', NULL);
 
--- Billed demo visits already have a claim. Insert after visits to satisfy the
--- foreign key; keep the amount as a snapshot of the visit's estimated cost.
 INSERT INTO claims (visit_id, reference, amount, submitted_at)
 SELECT id, CONCAT('clm_', UUID()), estimated_cost,
        TIMESTAMPADD(MINUTE, 5, check_out_time)

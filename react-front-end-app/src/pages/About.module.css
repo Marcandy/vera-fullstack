@@ -36,7 +36,6 @@
     padding: 16px;
 }
 
-/* the number carries the card; the label explains it */
 .statNumber {
     display: block;
     font-size: 1.8rem;
@@ -80,7 +79,6 @@
     text-decoration: underline;
 }
 
-/* phone: stat cards stack */
 @media (max-width: 640px) {
     .statGrid {
         grid-template-columns: 1fr;

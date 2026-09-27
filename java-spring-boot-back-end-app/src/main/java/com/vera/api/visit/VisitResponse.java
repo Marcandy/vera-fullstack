@@ -6,8 +6,6 @@ import java.time.Instant;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-// Ids AND names, so rendering a list needs no second call per row. This is the
-// shape the client already reads; the entity behind it is not.
 public record VisitResponse(
         Long id,
         Long patientId,
@@ -61,13 +59,8 @@ public record VisitResponse(
                 visit.getClaim() == null ? null : visit.getClaim().getSubmittedAt());
     }
 
-    // Four flat columns become the nested object the browser sent, so what the
-    // client reads back is the shape locationService produced.
-    //
-    // NON_NULL is on THIS record and must never move up to VisitResponse:
-    // CaregiverVisit builds its missing evidence list with `visit[field] ===
-    // null`, and undefined === null is false, so dropping null keys would empty
-    // that list silently on exactly the visits that need it.
+    // NON_NULL stays on this record only: CaregiverVisit checks `visit[field] === null`,
+    // and a dropped key reads as undefined.
     @JsonInclude(JsonInclude.Include.NON_NULL)
     record CheckInLocation(
             boolean available,

@@ -7,18 +7,11 @@ import LoadError from "../components/LoadError";
 import { useAsyncData } from "../hooks/useAsyncData";
 import styles from "./PatientDetail.module.css";
 
-// Most recent first: a care history is read backwards from now, unlike a
-// caregiver's day, which is read forwards.
 const byMostRecent = (a, b) => b.appointmentTime.localeCompare(a.appointmentTime);
 
 const PatientDetail = () => {
     const { patientId } = useParams();
 
-    // Both requests go out together rather than one after the other: they do
-    // not depend on each other, so awaiting them in sequence would spend two
-    // round trips to learn two independent facts. Promise.all rejects as soon
-    // as either does, which is the honest outcome here, because half a patient
-    // record is not a patient record.
     const { data, error: loadError, loading, reload } = useAsyncData(
         (signal) => Promise.all([
             getPatientById(patientId, { signal }),
@@ -30,8 +23,7 @@ const PatientDetail = () => {
 
     const [patient, visitList] = data ?? [null, []];
 
-    // Before not-found, for the same reason as VisitDetail: a failed request
-    // leaves patient null too, and those are different answers.
+    // Before not found: a failed request also leaves patient null.
     if (loadError) return (
         <LoadError
             message={`This patient record could not load. ${loadError.message}`}

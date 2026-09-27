@@ -68,8 +68,6 @@
     margin: 2px 0 0;
 }
 
-/* one card per document: the checklist is the point of this page, so each
-   row gets room for its dates rather than being squeezed onto one line */
 .docList {
     list-style: none;
     margin: 0;
@@ -99,7 +97,6 @@
     color: var(--vera-primary-dark);
 }
 
-/* the three dates side by side: received, issued, expires */
 .docFacts {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -130,7 +127,6 @@
     color: var(--text-muted);
 }
 
-/* the one status that stops someone working reads louder than a hint */
 .blockNote {
     margin: 10px 0 0;
     padding: 8px 12px;
@@ -238,8 +234,6 @@
     gap: 12px;
 }
 
-/* says plainly that no bytes are kept, rather than letting the file input
-   imply storage the app does not have */
 .honestyNote {
     margin: 0;
     padding: 10px 12px;
@@ -335,7 +329,6 @@
     padding: 24px;
 }
 
-/* phone: dates stack rather than crushing into three narrow columns */
 @media (max-width: 640px) {
     .docFacts,
     .dateRow {
@@ -351,8 +344,6 @@
     }
 }
 
-/* a renewal waiting on the office. Reads as an action to take, not as a
-   status the document already has */
 .submissionCard {
     margin-top: 12px;
     padding: 12px 14px;

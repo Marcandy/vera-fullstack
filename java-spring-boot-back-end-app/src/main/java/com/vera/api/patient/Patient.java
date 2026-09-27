@@ -7,8 +7,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-// Named explicitly: the naming strategy is configuration, so leaving it implicit
-// lets a setting rename the table with no code change.
 @Entity
 @Table(name = "patients")
 public class Patient {
@@ -20,8 +18,6 @@ public class Patient {
     private String address;
     private String phone;
 
-    // What the patient needs help with in general, not what they raised on one
-    // visit. Longer than the default varchar(255) allows.
     @Column(length = 2000)
     private String standingConcerns;
 

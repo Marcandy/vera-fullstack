@@ -104,7 +104,6 @@
     cursor: pointer;
 }
 
-/* search sits above the status chips: you narrow by who, then by state */
 .searchRow {
     display: flex;
     align-items: center;
@@ -135,8 +134,7 @@
     outline: none;
 }
 
-/* reserves its own width so the row does not jump as the word appears and
-   disappears on every query */
+/* reserves its width so the row does not jump as the word appears */
 .searchStatus {
     min-width: 6.5em;
     font-size: 0.8rem;
@@ -244,9 +242,6 @@
     }
 }
 
-/* The create action is a disclosure, not a permanent form. Outlined rather
-   than filled so it does not compete with the submit button inside the form
-   it opens. */
 .toggleButton {
     background: none;
     color: var(--vera-primary-dark);

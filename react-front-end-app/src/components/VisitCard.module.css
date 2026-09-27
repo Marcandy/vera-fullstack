@@ -29,14 +29,13 @@
     margin: 0;
 }
 
-/* the StatusPill's root span — pinned top-right of the card */
+/* the StatusPill's root span, pinned top-right of the card */
 .visitCard > span {
     position: absolute;
     top: 16px;
     right: 16px;
 }
 
-/* phone: keep long patient names from running under the pinned pill */
 @media (max-width: 640px) {
     .visitCard h4 {
         padding-right: 96px;

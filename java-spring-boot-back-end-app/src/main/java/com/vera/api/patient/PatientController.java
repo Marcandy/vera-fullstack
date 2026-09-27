@@ -18,8 +18,6 @@ public class PatientController {
     private final PatientRepository patients;
     private final PatientService patientService;
 
-    // Constructor injection, no @Autowired needed. The field is final, so the
-    // compiler refuses a controller built without its repository.
     PatientController(PatientRepository patients, PatientService patientService) {
         this.patients = patients;
         this.patientService = patientService;
@@ -32,8 +30,7 @@ public class PatientController {
                 .toList();
     }
 
-    // Missing is 404, never 200 with an empty body: the client renders not-found
-    // as an answer and a failed request as a retryable error.
+    // 404, not an empty 200: the client renders not found differently from a failed request.
     @GetMapping("/{id}")
     public ResponseEntity<PatientResponse> getPatientById(@PathVariable Long id) {
         return patients.findById(id)

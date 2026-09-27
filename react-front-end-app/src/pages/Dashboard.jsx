@@ -14,10 +14,7 @@ import StatusPill from "../components/StatusPill";
 import LoadError from "../components/LoadError";
 import styles from "./Dashboard.module.css";
 
-// Denise's stated need is knowing what wants her within five seconds of
-// landing. A list of ten visits does not answer that; it makes her read.
-// These two tiles are the only ones she can act on, which is why they sit
-// apart from the rest and why the pipeline counts below them are quieter.
+// The only tiles Denise can act on, so they sit apart from the pipeline counts.
 const ACTIONABLE = [
     {
         status: VISIT_STATUS.NEEDS_REVIEW,
@@ -31,9 +28,6 @@ const ACTIONABLE = [
     },
 ];
 
-// Reads the day count as a person would, and says which side of the date it
-// falls on. "Lapsed 12 days ago" and "expires in 18 days" are different
-// instructions, not two shades of the same warning.
 const expiryPhrase = (days) => {
     const count = Math.abs(days);
     const unit = count === 1 ? "day" : "days";
@@ -48,16 +42,12 @@ const PIPELINE = [
 ];
 
 const Dashboard = () => {
-    // Two independent facts, fetched together rather than in sequence.
-    // Promise.all fails the pair if either fails, which keeps one error state
-    // for one screen; the cost is that a failed caregiver read takes the visit
-    // panels down with it.
+    // Promise.all: one error state for the screen, at the cost of a failed caregiver
+    // read taking the visit panels down too.
     const { data, error: loadError, loading, reload } = useAsyncData(
         (signal) => Promise.all([getVisits({}, { signal }), getCaregivers({ signal })]), []);
 
-    // The counts below answer what is in the pipeline. This answers what is
-    // going wrong right now, which the pipeline cannot see: a visit sitting
-    // scheduled past its appointment still counts as scheduled.
+    // Catches what the counts cannot: a visit past its appointment still counts as scheduled.
     const now = useNow();
 
     if (loadError) return (
@@ -71,21 +61,12 @@ const Dashboard = () => {
 
     const [visitList, caregiverList] = data;
 
-    // Derived at render from the records themselves, so a count can never
-    // disagree with the list it summarizes.
     const counts = countByStatus(visitList);
     const needsAttention = visitsNeedingAttention(visitList, now);
 
-    // The other half of what Denise is accountable for. Visits prove care
-    // happened; credentials prove the person delivering it was allowed to.
-    // The dashboard knew about the first and said nothing about the second.
     const credentials = credentialsNeedingAttention(caregiverList, now);
     const notCleared = caregiverList.filter((caregiver) => !isClearedToWork(caregiver, now));
 
-    // Work already done that only Denise can finish. Without this the loop is
-    // open: a caregiver sends a renewal in and nothing ever tells the office to
-    // look at it, so the document sits pending forever and the caregiver
-    // believes they are covered.
     const awaitingReview = submissionsAwaitingReview(caregiverList);
     const readyToBillTotal = sumCost(
         visitList.filter((visit) => visit.status === VISIT_STATUS.READY_TO_BILL)
@@ -158,8 +139,6 @@ const Dashboard = () => {
                     {credentials.length > 0 && (
                         <ul className={styles.nudgeList}>
                             {credentials.map(({ caregiver, document, status }) => (
-                                // Keyed by the document id, which is unique across
-                                // the whole roster, so no composite key is needed.
                                 <li key={document.id} className={styles.nudgeRow}>
                                     <Link to={`/caregivers/${caregiver.id}`} className={styles.nudgeLink}>
                                         {caregiver.name}

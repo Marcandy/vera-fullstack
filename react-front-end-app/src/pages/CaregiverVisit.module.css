@@ -1,4 +1,3 @@
-/* Marcus's surface: phone-width even on desktop, one primary action */
 .caregiverVisit {
     max-width: 480px;
 }
@@ -52,7 +51,6 @@
     margin: 0;
 }
 
-/* the one big thumb target */
 .checkInButton {
     display: block;
     width: 100%;
@@ -80,7 +78,6 @@
     cursor: default;
 }
 
-/* same red family as needs-review: errors and holds are one signal system */
 .errorNote {
     margin: 10px 0 0;
     padding: 10px 14px;
@@ -154,7 +151,6 @@ textarea.fieldInput {
     margin-top: 8px;
 }
 
-/* amber, not red: a heads-up before acting, not a failure after */
 .warningNote {
     margin: 4px 0 0;
     padding: 10px 14px;
@@ -165,7 +161,6 @@ textarea.fieldInput {
     font-size: 0.9rem;
 }
 
-/* same red family as the needs-review pill: one signal, two zoom levels */
 .supplyCard {
     background-color: var(--card-bg);
     border: 1px solid var(--border);
@@ -196,7 +191,6 @@ textarea.fieldInput {
     padding: 20px;
 }
 
-/* standing context for this patient, read before the work starts */
 .standingConcerns {
     margin: 0 0 16px;
     padding: 12px 14px;

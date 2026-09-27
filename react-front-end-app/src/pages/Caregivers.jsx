@@ -8,9 +8,6 @@ import { useNow } from "../hooks/useNow";
 import { useAsyncData } from "../hooks/useAsyncData";
 import LoadError from "../components/LoadError";
 
-// One line telling Denise what is wrong with this caregiver's paperwork,
-// without making her read four rows to find out. The detail page is where
-// the documents themselves live now.
 const paperworkLine = (caregiver, now) => {
     const summary = documentSummary(caregiver, now);
 
@@ -26,10 +23,6 @@ const paperworkLine = (caregiver, now) => {
 };
 
 const Caregivers = () => {
-    // The roster read goes through the hook. The add-caregiver form keeps its
-    // own state because a form submission is not a page load: it has a pending
-    // flag, an inline error and a result that is merged into the list rather
-    // than refetched.
     const { data: caregiverList, error: loadError, loading, reload, setData } = useAsyncData(
         (signal) => getCaregivers({ signal }), []);
 
@@ -39,8 +32,6 @@ const Caregivers = () => {
     const [firstLast, setFirstLast] = useState("");
     const [phone, setPhone] = useState("");
 
-    // Clearance and the expiring count are derived from the clock, so this
-    // page ticks for the same reason the dashboard does.
     const now = useNow();
 
     async function handleAddCaregiver(e) {
@@ -49,9 +40,7 @@ const Caregivers = () => {
         setAdding(true);
         try {
             const newCaregiver = await addCaregiver({ name: firstLast, phone});
-            // Appended to the list we already hold rather than kept beside it.
-            // A second array layered over the fetched one is two sources for one
-            // list, and they disagree the moment anything refetches.
+            // Merged into the fetched list, never kept beside it as a second source.
             setData((roster) => [...roster, newCaregiver]);
             setFirstLast("");
             setPhone("");

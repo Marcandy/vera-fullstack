@@ -15,8 +15,6 @@ const Patients = () => {
     const [standingConcerns, setStandingConcerns] = useState("");
     const [adding, setAdding] = useState(false);
 
-    // Collapsed by default: the roster is what this page is for, and the create
-    // form pushed it below the fold.
     const [showAdd, setShowAdd] = useState(false);
     const [addError, setAddError] = useState(null);
 

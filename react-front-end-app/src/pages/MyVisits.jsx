@@ -10,45 +10,29 @@ import { VISIT_STATUS } from "../utils/status";
 import LoadError from "../components/LoadError";
 import styles from "./MyVisits.module.css";
 
-// Chronological, not by attention rank. The dashboard orders by what needs
-// Denise to act; a caregiver works through a day in the order it happens.
+// Chronological: a caregiver works through the day in order.
 const byAppointment = (a, b) => a.appointmentTime.localeCompare(b.appointmentTime);
 
-// History reads backwards from now, which is the opposite of a day.
 const byMostRecent = (a, b) => b.appointmentTime.localeCompare(a.appointmentTime);
 
 const MyVisits = () => {
     const { user, loading } = useSession();
 
 
-    // The caregiver gets the same derivation as the office. Telling Denise a
-    // punch was missed only reports the problem; telling Marcus while he can
-    // still fix it is the point.
     const now = useNow();
 
-    // The caregiver id comes from the session, never from the URL. A route
-    // like /my-visits?caregiverId=3 would let anyone read a colleague's
-    // patients by typing, and the server-side version of that mistake is a
-    // controller trusting a client-supplied actor instead of the principal.
+    // From the session, never the URL, or anyone could read a colleague's patients.
     const caregiverId = user?.caregiverId ?? null;
 
-    // Skipped rather than guarded inside the effect: an admin has no caregiver
-    // record, and asking for "the visits of nobody" is not a request worth
-    // sending. The hook stays in loading until there is something to ask.
+    // Skipped for an admin, who has no caregiver record.
     const { data: visitList, error: loadError, loading: visitsLoading, reload } = useAsyncData(
         (signal) => getVisitsByCaregiver(caregiverId, { signal }),
         [caregiverId],
         { skip: caregiverId === null });
 
-    // While the session is still unknown, user is null but nobody is signed
-    // out yet. Answering here would flash "nobody is signed in" at a
-    // caregiver who is, on every refresh. This is what the third state is for.
+    // Session still unknown: answering now would flash "nobody is signed in".
     if (loading) return <p>Loading...</p>
 
-    // Two different reasons for an empty screen, and they need different
-    // answers. Nobody signed in is not the same as signed in without a
-    // caregiver record, and telling a visitor that "your account" lacks
-    // something claims an account they do not have.
     if (!user) {
         return (
             <section className={styles.myVisits}>
@@ -62,8 +46,6 @@ const MyVisits = () => {
         );
     }
 
-    // An admin has no caregiver record, so an empty visit list would be a
-    // misleading answer to a question they cannot ask.
     if (caregiverId === null) {
         return (
             <section className={styles.myVisits}>
@@ -89,21 +71,14 @@ const MyVisits = () => {
 
     const needsAttention = visitsNeedingAttention(visitList, now);
 
-    // THREE QUESTIONS, NOT ONE LIST. This screen used to answer "every visit
-    // ever assigned to you, oldest first", which put three already-billed visits
-    // from last month above the one job happening today. A caregiver opens this
-    // on a phone between houses; the answer has to be what to do next.
-    // Needs-review visits are excluded here even when they happened today, so a
-    // visit checked out this afternoon without a signature appears once, under
-    // the heading that says what to do about it, rather than twice.
+    // Three questions, not one list: what to do next comes first. Needs-review visits
+    // appear once, under the heading that says what to do about them.
     const today = visitList
         .filter((visit) => visit.status !== VISIT_STATUS.NEEDS_REVIEW
             && isSameLocalDay(visit.appointmentTime, now))
         .sort(byAppointment);
 
-    // Visits held for missing evidence, whatever day they happened. These are
-    // here because the caregiver is the ONLY person who can clear them: the
-    // office can chase a missing signature but cannot produce one.
+    // Only the caregiver can clear these: the office cannot produce a signature.
     const needsEvidence = visitList
         .filter((visit) => visit.status === VISIT_STATUS.NEEDS_REVIEW)
         .sort(byMostRecent);

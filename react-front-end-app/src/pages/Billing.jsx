@@ -11,9 +11,7 @@ const Billing = () => {
 
     const [ readyToBillVisits, setReadyToBill] = useState(null);
     const [ billedVisits, setBilled ] = useState([]);
-    // loading guardrail
     const [ loading, setLoading ] = useState(true);
-    // id of the claim currently in flight, or null; drives the row's pending state
     const [ submittingId, setSubmittingId ] = useState(null);
     const [ submitError, setSubmitError ] = useState(null);
     const [ submitSuccess, setSubmitSuccess ] = useState(null);
@@ -30,8 +28,7 @@ const Billing = () => {
             } catch (err) {
                 setLoadError(err.message);
             } finally {
-                // finally, so a failed load stops loading too. Leaving the
-                // flag set would trade a wrong page for a permanent spinner.
+                // finally, so a failed load does not spin forever.
                 setLoading(false);
             }
         }
@@ -40,8 +37,7 @@ const Billing = () => {
 
     }, [reloadKey])
 
-    // auto-dismiss the success banner; cleanup cancels the old timer if a
-    // new submit replaces the message or the page unmounts
+    // Auto-dismiss the success banner.
     useEffect(() => {
         if (!submitSuccess) return;
         const timer = setTimeout(() => setSubmitSuccess(null), 7000);
@@ -54,7 +50,6 @@ const Billing = () => {
         setSubmittingId(id);
         try {
             const billedVisit = await submitClaim(id);
-            // move it: out of ready-to-bill, into billed (newest on top)
             setReadyToBill((prev) => prev.filter((visit) => visit.id !== id));
             setBilled((prev) => [billedVisit, ...prev]);
             setSubmitSuccess(

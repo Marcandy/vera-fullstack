@@ -10,8 +10,7 @@ import LoadError from '../components/LoadError';
 import { useAsyncData } from '../hooks/useAsyncData';
 import styles from './VisitDetail.module.css';
 
-// Evidence fields checked for the needs-review panel, in pipeline order.
-// patientConcern is deliberately absent — null there is normal, not missing.
+// patientConcern is absent on purpose: null there is normal, not missing.
 const EVIDENCE_LABELS = [
     { field: 'checkInTime', label: 'Check-in time' },
     { field: 'checkOutTime', label: 'Check-out time' },
@@ -121,9 +120,7 @@ const VisitDetail = () => {
 
     if (loading) return (<p>Loading...</p>);
 
-    // Checked before the not-found branch on purpose. A failed request also
-    // leaves visit as null, and telling someone the visit does not exist when
-    // the truth is that we could not ask is a different, wrong answer.
+    // Before not found: a failed request also leaves visit null.
     if (loadError) return (
         <LoadError
             message={`This visit could not load. ${loadError.message}`}

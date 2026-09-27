@@ -1,6 +1,5 @@
 package com.vera.api;
 
-// One component, because the React client reads exactly one field. Every catch
-// site in the app renders err.message verbatim to a person.
+// The React client renders `message` verbatim to the user.
 public record ApiError(String message) {
 }

@@ -12,8 +12,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-// A record of receipt, not a status. Expiring and cleared-to-work are derived
-// in the DTO and the React utils from these fields plus a clock.
 @Entity
 @Table(name = "documents")
 public class Document {
@@ -26,8 +24,6 @@ public class Document {
     @JoinColumn(name = "caregiver_id", nullable = false)
     private Caregiver caregiver;
 
-    // Checklist label: State ID, Background Check, CPR Certification, TB Test.
-    // Identity is this row's id, never the name.
     @Column(nullable = false)
     private String name;
 
@@ -39,8 +35,7 @@ public class Document {
     private String fileType;
     private Instant receivedAt;
 
-    // A renewal waiting on the office. Null pendingSubmittedAt means nothing
-    // waits, which the DTO maps as submission: null.
+    // Null pendingSubmittedAt means no renewal is waiting.
     private String pendingFileName;
     private Integer pendingFileSize;
     private String pendingFileType;
@@ -176,8 +171,6 @@ public class Document {
         this.pendingSubmittedAt = pendingSubmittedAt;
     }
 
-    // All six move together, or the record claims a renewal is waiting with
-    // nothing in it. WHEN to clear is still the service's call.
     public void clearPendingSubmission() {
         this.pendingFileName = null;
         this.pendingFileSize = null;

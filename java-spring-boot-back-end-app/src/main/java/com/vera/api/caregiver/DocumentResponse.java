@@ -4,8 +4,6 @@ import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-// Nested on CaregiverResponse so a roster row needs no second call. Status is
-// not here: the client derives it from these fields plus a clock.
 public record DocumentResponse(
         Long id,
         String name,

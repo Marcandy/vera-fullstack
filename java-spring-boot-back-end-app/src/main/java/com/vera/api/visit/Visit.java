@@ -31,8 +31,6 @@ public class Visit {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // LAZY so loading a visit does not drag two more rows along. The cost is that
-    // reading patient outside a session throws, which a join fetch is the fix for.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "patient_id")
     private Patient patient;
@@ -44,11 +42,7 @@ public class Visit {
     @Column(nullable = false)
     private Instant appointmentTime;
 
-    // STRING, never ORDINAL: ordinal stores declaration order, so reordering the
-    // constants silently rewrites every row already in the table.
-    //
-    // VARCHAR opts out of the native MySQL ENUM column, which would pin the five
-    // values into the schema and make #16's cancelled status an ALTER TABLE.
+    // VARCHAR, not a MySQL ENUM, so adding a status is not an ALTER TABLE.
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.VARCHAR)
     private VisitStatus status;
@@ -57,28 +51,22 @@ public class Visit {
     @JdbcTypeCode(SqlTypes.VARCHAR)
     private ServiceType serviceType;
 
-    // BigDecimal because double cannot represent 0.10 exactly, and a billing
-    // record that rounds differently than the payer loses the argument.
     @Column(precision = 10, scale = 2)
     private BigDecimal estimatedCost;
 
     @OneToOne(mappedBy = "visit", fetch = FetchType.LAZY)
     private Claim claim;
 
-    // The four evidence fields. Null means not captured, and what a visit is
-    // missing is derived from these nulls when it is read, never stored.
+    // Evidence. Null means not captured; what is missing is derived, never stored.
     private Instant checkInTime;
     private Instant checkOutTime;
 
-    // Where the device said it was at check-in. Metadata, never evidence: a
-    // refused fix still bills. Boxed, because 0.0 and "never captured" are
-    // different facts and a primitive cannot tell them apart.
+    // Metadata, never evidence. Boxed: 0.0 and never captured are different facts.
     private Double checkInLatitude;
     private Double checkInLongitude;
     private Double checkInAccuracy;
 
     // Why there are no coordinates: denied, unavailable, timeout, unsupported.
-    // Set only when the device was asked and could not answer.
     private String checkInLocationReason;
 
     @Column(length = 2000)
@@ -86,8 +74,7 @@ public class Visit {
 
     private String signature;
 
-    // What the patient raised on this one visit. Not evidence, so it never blocks
-    // billing, and not the patient's standing concerns either.
+    // Raised on this visit. Not evidence, so it never blocks billing.
     @Column(length = 2000)
     private String patientConcern;
 

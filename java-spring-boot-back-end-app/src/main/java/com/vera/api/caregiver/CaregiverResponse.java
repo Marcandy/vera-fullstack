@@ -2,8 +2,6 @@ package com.vera.api.caregiver;
 
 import java.util.List;
 
-// The mock shape: ids, names, phone, and the nested checklist. Status is not
-// a field. The table stays separate; this list is the read model.
 public record CaregiverResponse(
         Long id,
         String name,

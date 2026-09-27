@@ -6,11 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// No rules here: the ids and the body go to DocumentService, and the 404 and
-// 409 arrive as exceptions the advice translates.
-//
-// Every endpoint returns the WHOLE CAREGIVER, because both pages call
-// setCaregiver with the result. A DocumentResponse would break them.
+// Every endpoint returns the whole caregiver: both pages replace their state with it.
 @RestController
 @RequestMapping("/api/caregivers/{caregiverId}/documents")
 public class DocumentController {
@@ -21,7 +17,6 @@ public class DocumentController {
         this.documentService = documentService;
     }
 
-    // 200, not 201: nothing was created, an existing row was completed.
     @PostMapping("/{documentId}/signature")
     public CaregiverResponse sign(
             @PathVariable Long caregiverId,
@@ -47,7 +42,6 @@ public class DocumentController {
                 documentService.submitRenewal(caregiverId, documentId, request));
     }
 
-    // No body: accepting carries no new information.
     @PostMapping("/{documentId}/submission/acceptance")
     public CaregiverResponse acceptSubmission(
             @PathVariable Long caregiverId,
