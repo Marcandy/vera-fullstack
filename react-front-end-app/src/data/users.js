@@ -1,15 +1,5 @@
-// Mock user data. Components NEVER import this file directly;
-// all access goes through src/services/authService.js.
-// A User is whoever signs in. A Caregiver is whoever the agency employs.
-// They are separate entities on purpose: Denise has no caregiver record,
-// and an office manager will eventually need a login without one.
-// caregiverId is the id of a row in the caregivers table, or null for a
-// pure admin. It is what "my visits" filters on.
-// roles is an ARRAY, not a single field, because it maps one to one onto
-// Spring Security's authorities collection, and because the owner of a
-// small agency really does cover visits herself.
-// There are no passwords here. This is a demo sign-in, not authentication,
-// and storing even a fake one would invite someone to treat it as real.
+// Mock users for the demo sign-in; components go through authService. caregiverId
+// is null for an admin. No passwords: this is not authentication.
 export const users = [
     {
         id: 1,

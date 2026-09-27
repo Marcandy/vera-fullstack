@@ -7,7 +7,6 @@
     color: var(--vera-primary-dark);
 }
 
-/* add form: one quiet card, two fields, one action */
 .addForm {
     background-color: var(--card-bg);
     border: 1px solid var(--border);
@@ -55,7 +54,6 @@
     outline: none;
 }
 
-/* Denise is on a desktop: compact action, not a thumb target */
 .addButton {
     background-color: var(--btn-bg);
     color: var(--btn-text);
@@ -106,8 +104,6 @@
     min-width: 0;
 }
 
-/* the roster row is a link into the caregiver's record now, so the wrapper
-   carries the affordance and its owner styles it, matching Patients */
 .cardLink {
     text-decoration: none;
     color: inherit;
@@ -150,8 +146,6 @@
     font-weight: 600;
 }
 
-/* not cleared now means a real block (something outstanding or lapsed),
-   not merely a renewal to chase, so it reads in the alert family */
 .notClearedBadge {
     color: #a61b1b;
     font-size: 0.85rem;
@@ -164,8 +158,6 @@
     font-size: 0.95rem;
 }
 
-/* the one line summarizing paperwork; the documents themselves live on the
-   caregiver's own page */
 .paperwork {
     margin: 0;
     font-size: 0.9rem;
@@ -200,7 +192,6 @@
     cursor: default;
 }
 
-/* phone: form fields stack, and name + cleared badge may wrap */
 @media (max-width: 640px) {
     .fieldRow {
         grid-template-columns: 1fr;

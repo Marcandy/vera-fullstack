@@ -1,9 +1,4 @@
-// Shared display formatters. Store ISO strings, format at render.
-
-// Guarded like formatTime and formatDate below, and for the same reason: an
-// absent value rendered the literal string "Invalid Date", which reads as a
-// bug rather than as an absence. Reached now that claimId and submittedAt
-// arrive from the API without them, since CLAIMS is not built yet.
+// Guarded: an absent value would render "Invalid Date".
 export const formatDateTime = (isoString) =>
     isoString
         ? new Date(isoString).toLocaleString("en-US", {
@@ -16,9 +11,7 @@ export const formatTime = (isoString) =>
         ? new Date(isoString).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
         : "—";
 
-// Date without a time, for facts that are true for a whole day. A credential
-// expires on a date; printing "11:59 PM" beside it would imply a precision
-// the record does not have.
+// Date only: an expiry has no meaningful time of day.
 export const formatDate = (isoString) =>
     isoString
         ? new Date(isoString).toLocaleDateString("en-US", {
@@ -26,9 +19,6 @@ export const formatDate = (isoString) =>
         })
         : "Not recorded";
 
-// Bytes as a person reads them. Kept in bytes on the record, because that is
-// what the file system reports and what a server would store; rounding
-// belongs at render, like every other formatter here.
 export const formatFileSize = (bytes) => {
     if (!Number.isFinite(bytes)) return "";
     if (bytes < 1024) return `${bytes} B`;
@@ -39,8 +29,7 @@ export const formatFileSize = (bytes) => {
 export const formatCurrency = (amount) =>
     amount.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
-// Human phrases for a location the device could not provide. Keys match the
-// reason values in locationService.
+// Keys match the reason values in locationService.
 const LOCATION_REASONS = {
     denied: "permission denied",
     unavailable: "no signal",
@@ -48,10 +37,6 @@ const LOCATION_REASONS = {
     unsupported: "not supported on this device",
 };
 
-// Renders a stored checkInLocation as a plain statement of what was captured.
-// It never dresses up an absence: an unavailable fix reads as unavailable,
-// because a placeholder that looks like a position would be a claim the
-// record cannot support.
 export const formatLocation = (location) => {
     if (!location) return "Not captured";
 
@@ -66,6 +51,5 @@ export const formatLocation = (location) => {
         : coords;
 };
 
-// hours between two ISO strings; Date minus Date yields milliseconds
 export const hoursBetween = (checkIn, checkOut) =>
     ((new Date(checkOut) - new Date(checkIn)) / 3600000).toFixed(1);

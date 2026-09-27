@@ -74,8 +74,6 @@
     margin: 0;
 }
 
-/* same red family as the needs-review pill — the panel and the pill
-   are the same signal at two zoom levels */
 .missingPanel {
     background-color: #fdecea;
     border: 1px solid #f0b9b4;
@@ -116,7 +114,6 @@
     font-size: 1.1rem;
 }
 
-/* phone: title, pill, and caregiver link stack instead of crowding one row */
 @media (max-width: 640px) {
     .headerRow {
         flex-wrap: wrap;

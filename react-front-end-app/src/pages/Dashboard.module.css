@@ -174,10 +174,6 @@
     line-height: 1.45;
 }
 
-/* Same shape as the nudge panel, different edge colour: credentials are a
-   compliance hold rather than a missed punch, and the two should not read as
-   one queue. Reuses the nudge row classes below it, since the row is
-   genuinely the same thing: a name, a fact, a badge. */
 .credentialPanel {
     margin-top: 24px;
     padding: 16px;
@@ -194,8 +190,6 @@
     line-height: 1.45;
 }
 
-/* a renewal sent in and not yet checked: an action for the office, in the
-   same row shape as the other credential lines */
 .reviewFlag {
     padding: 2px 10px;
     border-radius: 999px;

@@ -1,8 +1,6 @@
 const API_BASE = "/api";
 
-// Dropped before the query string is built: URLSearchParams turns undefined
-// into the literal string "undefined", which the API answers with a 400 on a
-// page the user never filtered.
+// URLSearchParams would send undefined as the string "undefined".
 const toQuery = (params = {}) => {
     const entries = Object.entries(params)
         .filter(([, value]) => value !== null && value !== undefined && value !== "");
@@ -13,11 +11,7 @@ const toQuery = (params = {}) => {
 export const request = async (path, { signal, params, method = "GET", body } = {}) => {
     let response;
 
-    // Checked against undefined and not truthiness: JSON.stringify(null) is the
-    // string "null", a JSON document rather than an absent body, and Spring's
-    // @RequestBody(required = false) treats those differently. A bodyless
-    // request also sends no Content-Type, which keeps a cross origin GET simple
-    // rather than preflighted.
+    // undefined, not falsy: null would post the JSON document "null".
     const hasBody = body !== undefined;
 
     try {
@@ -28,27 +22,21 @@ export const request = async (path, { signal, params, method = "GET", body } = {
             body: hasBody ? JSON.stringify(body) : undefined,
         });
     } catch (cause) {
-        // An abort is useAsyncData cancelling itself on unmount. It must pass
-        // through untouched or every navigation paints an error on the way out.
+        // useAsyncData cancelling itself on unmount, not an error to show.
         if (cause.name === "AbortError") throw cause;
 
-        // The caregiver reads the message; the original TypeError rides along
-        // as cause so a console still shows what actually failed.
         throw new Error("Could not reach the server. Check your connection.", { cause });
     }
 
     if (!response.ok) {
-        // Every catch site renders err.message verbatim, so the server's
-        // message has to survive. status rides along for callers that need to
-        // tell one failure from another.
+        // Callers render err.message verbatim, so keep the server's message.
         const errorBody = await response.json().catch(() => ({}));
         const error = new Error(errorBody.message ?? `Request failed (${response.status})`);
         error.status = response.status;
         throw error;
     }
 
-    // 204 and an empty 200 have no JSON document. response.json() would throw
-    // on the empty body a DELETE returns.
+    // A DELETE's empty body has no JSON to parse.
     if (response.status === 204) return undefined;
     const text = await response.text();
     if (!text) return undefined;

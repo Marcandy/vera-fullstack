@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// CaregiverService owns add and delete. GET stays a read through the
-// join-fetch queries so a list includes the checklist.
 @RestController
 @RequestMapping("/api/caregivers")
 public class CaregiverController {
@@ -41,8 +39,6 @@ public class CaregiverController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    // 201: a caregiver was created. required = false so a missing body is null
-    // and the service decides the 400. No rules here.
     @PostMapping
     public ResponseEntity<CaregiverResponse> add(
             @RequestBody(required = false) CreateCaregiverRequest request) {
@@ -51,7 +47,6 @@ public class CaregiverController {
                 .body(CaregiverResponse.from(caregiver));
     }
 
-    // 204: the row is gone. 409 if they have visits, decided in the service.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         caregiverService.delete(id);

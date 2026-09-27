@@ -5,13 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-// One advice for the whole API rather than try/catch per controller. The service
-// throws what the domain means; this decides what HTTP calls it.
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
-    // 409 and not 400: the request was well formed, it is the visit's current
-    // state that makes it impossible, which is what Conflict means.
+    // 409, not 400: the request is valid, the visit's current state forbids it.
     @ExceptionHandler(IllegalTransitionException.class)
     public ResponseEntity<ApiError> handleIllegalTransition(IllegalTransitionException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)

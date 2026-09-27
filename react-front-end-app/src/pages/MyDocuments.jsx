@@ -11,9 +11,6 @@ import { useSession } from "../context/sessionContext";
 import { useNow } from "../hooks/useNow";
 import styles from "./MyDocuments.module.css";
 
-// What each status means to the person who has to do something about it. The
-// office reads "expiring" as paperwork to chase; the caregiver reads it as an
-// appointment to book. Same derived status, different sentence.
 const STATUS_NOTE = {
     [DOCUMENT_STATUS.PENDING]: "The office has not received this yet.",
     [DOCUMENT_STATUS.EXPIRED]: "This has lapsed. It is what is stopping you being cleared.",
@@ -36,10 +33,7 @@ const startOfDay = (dateValue) =>
 const MyDocuments = () => {
     const { user, loading: sessionLoading } = useSession();
 
-    // From the session, never from the URL. Identical reasoning to My visits:
-    // /my-documents?caregiverId=3 would hand anyone a colleague's compliance
-    // file, and the server-side version of that mistake is a controller
-    // trusting a client-supplied actor instead of the principal.
+    // From the session, never the URL, or anyone could read a colleague's file.
     const caregiverId = user?.caregiverId ?? null;
 
     const [caregiver, setCaregiver] = useState(null);
@@ -47,8 +41,6 @@ const MyDocuments = () => {
     const [loadError, setLoadError] = useState(null);
     const [reloadKey, setReloadKey] = useState(0);
 
-    // Status is derived from the clock, so it ticks for the same reason the
-    // visit flags do: a card does not stop expiring because a page is open.
     const now = useNow();
 
     const [openForm, setOpenForm] = useState(null);
@@ -111,8 +103,7 @@ const MyDocuments = () => {
         setFormError(null);
         setSubmitting(true);
         try {
-            // Only the metadata leaves the browser, because only the metadata
-            // has anywhere to go without a backend.
+            // Only metadata is sent; nothing stores the file.
             setCaregiver(await submitDocumentRenewal(caregiverId, documentId, {
                 fileName: file?.name,
                 fileSize: file?.size,
@@ -181,8 +172,6 @@ const MyDocuments = () => {
             <h3>My documents</h3>
             <p className={styles.subtitle}>Signed in as {user.name}</p>
 
-            {/* The headline answer. Denise sees this on her roster; the person
-                it is actually about could not see it anywhere until now. */}
             <div className={cleared ? styles.clearedBanner : styles.blockedBanner}>
                 <strong>{cleared ? "You are cleared to work" : "You are not cleared to work"}</strong>
                 {!cleared && (
@@ -220,19 +209,13 @@ const MyDocuments = () => {
                                 <p className={styles.expiry}>Does not expire</p>
                             )}
 
-                            {/* Suppressed once something has been sent in: the
-                                submission note below supersedes it, and
-                                "the office has not received this" beside
-                                "sent in on the 3rd" is a straight contradiction. */}
+                            {/* Superseded by the submission note once something is sent in. */}
                             {!pending && STATUS_NOTE[status] && (
                                 <p className={status === DOCUMENT_STATUS.EXPIRED ? styles.blockNote : styles.statusNote}>
                                     {STATUS_NOTE[status]}
                                 </p>
                             )}
 
-                            {/* Says plainly that sending it in is not the end of
-                                it. The alternative is a caregiver believing they
-                                are covered while the office has not looked. */}
                             {pending && (
                                 <p className={styles.submittedNote}>
                                     Sent in {formatDate(document.submission.submittedAt)}:{" "}

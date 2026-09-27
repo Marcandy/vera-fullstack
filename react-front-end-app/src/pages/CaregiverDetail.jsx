@@ -12,20 +12,14 @@ import { useNow } from "../hooks/useNow";
 import { useAsyncData } from "../hooks/useAsyncData";
 import styles from "./CaregiverDetail.module.css";
 
-// Most recent first, matching the patient record: a work history is read
-// backwards from now.
 const byMostRecent = (a, b) => b.appointmentTime.localeCompare(a.appointmentTime);
 
-// What each status means for the office, in Denise's terms rather than the
-// record's. The pill says what the document is; this says what to do about it.
 const STATUS_NOTE = {
     [DOCUMENT_STATUS.PENDING]: "Not received yet",
     [DOCUMENT_STATUS.EXPIRED]: "Lapsed. This is what is blocking clearance",
     [DOCUMENT_STATUS.EXPIRING]: `Still valid, renew within ${RENEWAL_WINDOW_DAYS} days`,
 };
 
-// Reads the day count as a person would. Pluralized, because "expires in 1
-// days" on a compliance record looks like nobody checked the screen.
 const dayPhrase = (days) => {
     const count = Math.abs(days);
     const unit = count === 1 ? "day" : "days";
@@ -33,9 +27,7 @@ const dayPhrase = (days) => {
     return days >= 0 ? `in ${count} ${unit}` : `${count} ${unit} ago`;
 };
 
-// A date input hands back "YYYY-MM-DD" with no time. Expiry is stored as the
-// END of the day, because a card that expires on the 5th is valid through the
-// 5th; parsing the bare date would quietly cut the last day off.
+// End of day: a card that expires on the 5th is valid through the 5th.
 const endOfDay = (dateValue) =>
     dateValue ? new Date(`${dateValue}T23:59:59`).toISOString() : null;
 
@@ -45,10 +37,6 @@ const startOfDay = (dateValue) =>
 const CaregiverDetail = () => {
     const { caregiverId } = useParams();
 
-    // Independent facts, fetched together rather than in sequence. setData is
-    // how a mutation writes its result back: signing a document returns the
-    // updated caregiver, so refetching would be a second round trip to learn
-    // what the service already said.
     const { data, error: loadError, loading, reload, setData } = useAsyncData(
         (signal) => Promise.all([
             getCaregiverById(caregiverId, { signal }),
@@ -59,13 +47,9 @@ const CaregiverDetail = () => {
     const setCaregiver = (updated) =>
         setData(([, theirVisits]) => [updated, theirVisits]);
 
-    // Document status is derived from the clock, so it has to tick for the
-    // same reason the visit attention flags do: leave this page open across a
-    // document's expiry and a stale render would still call it valid.
     const now = useNow();
 
-    // Which document has a form open, and which one. Only one at a time: two
-    // open forms on a checklist is a way to sign the wrong row.
+    // One open form at a time, so the wrong row cannot be signed.
     const [openForm, setOpenForm] = useState(null);
     const [signatureValue, setSignatureValue] = useState("");
     const [file, setFile] = useState(null);
@@ -102,10 +86,6 @@ const CaregiverDetail = () => {
         }
     }
 
-    // Accepting what a caregiver sent in. This is the step that makes a
-    // submitted renewal the credential of record, and it is deliberately the
-    // office's to take: the agency is what has to produce a valid card at a
-    // survey, so somebody here has to have looked at it.
     async function handleAccept(documentId) {
         setFormError(null);
         setSubmitting(true);
@@ -123,8 +103,7 @@ const CaregiverDetail = () => {
         setFormError(null);
         setSubmitting(true);
         try {
-            // Only the metadata leaves the browser, because only the metadata
-            // has anywhere to go. The File object itself is dropped here.
+            // Only metadata is sent; nothing stores the file.
             const updated = await uploadDocument(caregiverId, documentId, {
                 fileName: file?.name,
                 fileSize: file?.size,
@@ -145,9 +124,7 @@ const CaregiverDetail = () => {
 
     const [caregiver, visitList] = data ?? [null, []];
 
-    // Checked before not-found, matching VisitDetail and PatientDetail: a
-    // failed request also leaves caregiver null, and those are different
-    // answers to give someone.
+    // Before not found: a failed request also leaves caregiver null.
     if (loadError) return (
         <LoadError
             message={`This caregiver record could not load. ${loadError.message}`}
@@ -218,16 +195,9 @@ const CaregiverDetail = () => {
                                                 </span>
                                             </>
                                         ) : status === DOCUMENT_STATUS.PENDING ? (
-                                            // Nothing has arrived, so there is nothing
-                                            // to say about its expiry. Printing "Does
-                                            // not expire" here would assert a fact
-                                            // about a document the office has never
-                                            // seen.
+                                            // Nothing received, so nothing to say about expiry.
                                             "Not recorded"
                                         ) : (
-                                            // A received document with no expiry is a
-                                            // real answer, not an absence: a completed
-                                            // background check is a permanent record.
                                             "Does not expire"
                                         )}
                                     </dd>
@@ -255,9 +225,6 @@ const CaregiverDetail = () => {
                                 </p>
                             )}
 
-                            {/* A renewal the caregiver sent in. It changes
-                                nothing about the record until it is accepted,
-                                which is what the wording has to convey. */}
                             {hasPendingSubmission(document) && (
                                 <div className={styles.submissionCard}>
                                     <p className={styles.submissionText}>

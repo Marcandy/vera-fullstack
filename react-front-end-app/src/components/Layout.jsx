@@ -24,12 +24,6 @@ const Layout = () => {
         <div className={styles.shell}>
             <header className={styles.banner}>
                 <h1 className={styles.brand}>
-                    {/* <svg className={styles.logo} viewBox="0 0 120 100" aria-hidden="true">
-                        <path d="M 20 44 L 52 82" stroke="#2f9e44" strokeWidth="17" strokeLinecap="round" fill="none" />
-                        <path d="M 52 82 L 100 14" stroke="#1971c2" strokeWidth="17" strokeLinecap="round" fill="none" />
-                        <circle cx="52" cy="82" r="8" fill="#1971c2" />
-                        <circle cx="52" cy="82" r="4.5" fill="#69db7c" />
-                    </svg> */}
                     <svg className={styles.logo} viewBox="0 0 140 100" aria-hidden="true">
                         <rect x="8" y="18" width="124" height="64" rx="32" fill="none" stroke="#ffffff" strokeOpacity="0.55" strokeWidth="6" />
                         <path d="M 44 50 L 64 70" fill="none" stroke="#3dccc7" strokeWidth="11" strokeLinecap="round" />
@@ -65,8 +59,7 @@ const Layout = () => {
 
             <aside className={menuOpen ? `${styles.sidebar} ${styles.open}` : styles.sidebar}>
                 {/* clicking any link also closes the phone menu; no effect on desktop */}
-                {/* Rendered only once the session is known. Guessing during the
-                    unknown state would flash the admin nav at a caregiver. */}
+                {/* Waits for the session, or the admin nav would flash at a caregiver. */}
                 {!loading && (
                     <nav onClick={() => setMenuOpen(false)}>
                         {!user && (

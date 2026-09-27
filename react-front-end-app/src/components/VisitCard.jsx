@@ -4,11 +4,7 @@ import { formatDateTime } from '../utils/format';
 import { SERVICE_TYPE_LABEL } from '../utils/serviceType';
 import styles from './VisitCard.module.css';
 
-// attention is optional and defaults to nothing: a caller that does not know
-// the time cannot claim a visit is late, and the card must not guess.
-// showCaregiver defaults on, and is turned off in exactly one place: a
-// caregiver's own list, where their name on every card is the one fact they
-// already know and the scarcest thing on a phone is vertical space.
+// No attention by default: a caller that does not know the time cannot call a visit late.
 const VisitCard = ({ visit, attention = null, showCaregiver = true }) => {
     return (
         <article className={styles.visitCard}>

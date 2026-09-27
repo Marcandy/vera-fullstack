@@ -1,7 +1,7 @@
 .shell {
     display: grid;
     grid-template-columns: 160px 1fr;
-    grid-template-rows: auto 1fr auto;   /* banner, sidebar + content, footer */
+    grid-template-rows: auto 1fr auto;
     min-height: 100vh;
 }
 
@@ -10,9 +10,8 @@
     padding: 20px 14px;
 }
 
-/* blue brand banner, bleeding to the sidebar's edges */
 .banner {
-    grid-column: 1 / -1;            /* span from first to last column line */
+    grid-column: 1 / -1;
     background-color: var(--vera-primary);
     color: #ffffff;
     padding: 14px 24px;
@@ -81,7 +80,7 @@
 }
 
 .navLink {
-    color: var(--chrome-text);   /* palette decides what passes on the chrome */
+    color: var(--chrome-text);
     text-decoration: none;
     padding: 9px 12px;
     border-radius: 8px;
@@ -93,7 +92,7 @@
 }
 
 .active {
-    background-color: #ffffff;   /* white chip pops on the light chrome */
+    background-color: #ffffff;
     color: var(--vera-secondary-dark);
     font-weight: 600;
 }
@@ -102,13 +101,10 @@
     padding: 24px 32px;
 }
 
-/* the footer's own look lives in Footer.module.css; the shell only
-   owns where it sits: full width across the grid */
 .footerSlot {
     grid-column: 1 / -1;
 }
 
-/* tablet: same two-column layout, tighter chrome */
 @media (max-width: 900px) {
     .shell {
         grid-template-columns: 140px 1fr;
@@ -119,7 +115,6 @@
     }
 }
 
-/* phone: one column; the sidebar collapses behind the menu button */
 @media (max-width: 640px) {
     .shell {
         grid-template-columns: 1fr;
@@ -130,8 +125,7 @@
         display: block;
     }
 
-    /* the banner runs out of room next to the menu button; the name is
-       repeated on the caregiver's own page, the sign-out control is not */
+    /* no room beside the menu button; the name repeats on the caregiver's own page */
     .sessionUser {
         display: none;
     }
@@ -145,7 +139,6 @@
         grid-row: 2;
     }
 
-    /* toggled from Layout state when the menu button is tapped */
     .open {
         display: block;
     }

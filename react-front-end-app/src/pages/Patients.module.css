@@ -167,8 +167,6 @@
     margin-bottom: 16px;
 }
 
-/* Outlined rather than filled so it does not compete with the submit button
-   inside the form it opens. */
 .toggleButton {
     background: none;
     color: var(--vera-primary-dark);

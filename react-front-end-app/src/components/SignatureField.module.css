@@ -27,7 +27,6 @@
     outline: none;
 }
 
-/* the hint is instruction, not a signature: keep it in the UI font */
 .signatureInput::placeholder {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     font-size: 0.95rem;

@@ -18,8 +18,6 @@ import com.vera.api.patient.PatientRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// The rules live here, not in the controller and not in the entity. They ran in
-// the browser until now, which meant they were suggestions.
 @Service
 public class VisitService {
 
@@ -45,9 +43,8 @@ public class VisitService {
                     "Cannot check in a visit that is " + visit.getStatus().label());
         }
 
-        // The server stamps the clock: a time the caller could author is not
-        // evidence. Location is the exception, because the device is the only
-        // authority on where it is, and it never blocks billing.
+        // The server stamps the time; the device supplies location because it is the only
+        // authority on where it is.
         visit.setCheckInTime(Instant.now());
         applyLocation(visit, location);
         visit.setStatus(VisitStatus.IN_PROGRESS);
@@ -210,9 +207,7 @@ public class VisitService {
         return load(saved.getId());
     }
 
-    // findByIdWithPeople and not findById: open-in-view is false, so the
-    // response relations have to be loaded inside this transaction or the controller
-    // throws when it maps the response.
+    // open-in-view is false, so the response relations load inside this transaction.
     private Visit load(Long id) {
         return visits.findByIdWithPeople(id)
                 .orElseThrow(() -> new NotFoundException("Visit " + id + " not found"));

@@ -12,13 +12,10 @@ import com.vera.api.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// The document rules. They ran in caregiverService.js until now, which made
-// them suggestions: anything that could reach the API could ignore them.
 @Service
 public class DocumentService {
 
-    // Mirrors RENEWAL_WINDOW_DAYS in src/utils/documents.js. Both sides must
-    // agree or a pill and a refusal will contradict each other.
+    // Must match RENEWAL_WINDOW_DAYS in src/utils/documents.js.
     private static final long RENEWAL_WINDOW_DAYS = 30;
 
     private final CaregiverRepository caregivers;
@@ -29,9 +26,7 @@ public class DocumentService {
         this.documents = documents;
     }
 
-    // The Java twin of documentStatus() in src/utils/documents.js. `now` is a
-    // parameter and never a clock read, so the answer can be reasoned about at a
-    // chosen instant.
+    // Java twin of documentStatus() in src/utils/documents.js.
     static DocumentStatus statusOf(Document document, Instant now) {
         boolean received = document.getSignature() != null || document.getFileName() != null;
 
@@ -48,8 +43,7 @@ public class DocumentService {
         return DocumentStatus.SIGNED;
     }
 
-    // The server reads the clock, because a caller who could choose the instant
-    // could choose one where a lapsed card still looks signable.
+    // Server clock: a caller-chosen instant could make a lapsed card look signable.
     @Transactional
     public Caregiver sign(Long caregiverId, Long documentId, SignatureRequest request) {
         if (request == null) {
@@ -61,8 +55,6 @@ public class DocumentService {
         Instant now = Instant.now();
         DocumentStatus status = statusOf(document, now);
 
-        // EXPIRED gets its own message: a signature does not renew a lapsed
-        // credential, and naming the state without naming the exit is useless.
         if (status != DocumentStatus.PENDING) {
             throw new IllegalTransitionException(
                     status == DocumentStatus.EXPIRED
@@ -81,8 +73,7 @@ public class DocumentService {
         return reload(caregiverId);
     }
 
-    // Accepts a document in ANY state: this is both how a credential arrives and
-    // how a lapsed one is replaced, and it is the only exit from EXPIRED.
+    // Accepts any state: this is the only exit from EXPIRED.
     @Transactional
     public Caregiver recordFile(Long caregiverId, Long documentId, DocumentFileRequest request) {
         if (request == null) {
@@ -116,10 +107,8 @@ public class DocumentService {
         return reload(caregiverId);
     }
 
-    // Does NOT take effect: the submission waits beside the live document until
-    // the office accepts it, because a credential that cleared itself is one
-    // nobody checked. So renewing early cannot invalidate a card still in force,
-    // and a lapsed caregiver stays lapsed until someone looks.
+    // Waits beside the live document until the office accepts it: a credential
+    // that cleared itself is one nobody checked.
     @Transactional
     public Caregiver submitRenewal(Long caregiverId, Long documentId, DocumentFileRequest request) {
         if (request == null) {
@@ -152,7 +141,6 @@ public class DocumentService {
         return reload(caregiverId);
     }
 
-    // The only step that makes a submitted renewal the credential of record.
     @Transactional
     public Caregiver acceptSubmission(Long caregiverId, Long documentId) {
         Document document = load(caregiverId, documentId);
@@ -171,8 +159,7 @@ public class DocumentService {
         document.setIssuedAt(document.getPendingIssuedAt());
         document.setExpiresAt(document.getPendingExpiresAt());
 
-        // When the caregiver SENT it: checking the card is not when the agency
-        // came into possession of it.
+        // When the caregiver sent it, not when the office checked it.
         document.setReceivedAt(submittedAt);
 
         // The old signature attested to the document this one replaces.
@@ -182,25 +169,19 @@ public class DocumentService {
         return reload(caregiverId);
     }
 
-    // Fails closed on identity: a document belonging to another caregiver comes
-    // back empty and reads as not found.
     private Document load(Long caregiverId, Long documentId) {
         return documents.findByIdAndCaregiver_Id(documentId, caregiverId)
                 .orElseThrow(() -> new NotFoundException(
                         "Document " + documentId + " not found for caregiver " + caregiverId));
     }
 
-    // open-in-view is false, so the checklist has to come back through the join
-    // fetch or the controller maps a closed session.
+    // open-in-view is false, so reload through the join fetch.
     private Caregiver reload(Long caregiverId) {
         return caregivers.findByIdWithDocuments(caregiverId)
                 .orElseThrow(() -> new NotFoundException("Caregiver " + caregiverId + " not found"));
     }
 
-    // An expiry is optional, but one already past would file a document
-    // straight into the state the call exists to clear. The wording differs
-    // between recording one and sending one in, so the message comes from the
-    // caller.
+    // An expiry already past would file the document straight into EXPIRED.
     private static void requireFutureExpiry(Instant expiresAt, Instant now, String message) {
         if (expiresAt != null && !expiresAt.isAfter(now)) {
             throw new InvalidInputException(message);

@@ -14,8 +14,7 @@ import { VISIT_STATUS, VISIT_STATUS_LABEL } from "../utils/status";
 import { SERVICE_TYPE_LABEL } from "../utils/serviceType";
 import { getCurrentLocation } from "../services/locationService";
 
-// Evidence fields for the needs-review supply panel, in pipeline order.
-// Duplicated from VisitDetail for now; extraction is a parked card.
+// In pipeline order. Duplicated from VisitDetail.
 const EVIDENCE_LABELS = [
     { field: "checkInTime", label: "Check-in time" },
     { field: "checkOutTime", label: "Check-out time" },
@@ -27,15 +26,9 @@ const CaregiverVisit = () => {
     const { visitId } = useParams();
     const { user, loading: sessionLoading } = useSession();
 
-    // This page is reached from two directions, so back means two things. An
-    // admin arrived from the visit's read surface; a caregiver arrived from
-    // their own day and has no nav entry for the admin visit list at all.
+    // Reached from two directions, so back means two things.
     const isAdmin = hasRole(user, ROLES.ADMIN);
 
-    // setData is how each mutation writes its result back. Check-in, check-out
-    // and supplying evidence all return the updated visit, so there is nothing
-    // to refetch: asking again would spend a round trip to be told what we were
-    // just handed.
     const { data: visit, error: loadError, loading, reload, setData: setVisit } = useAsyncData(
         (signal) => getVisitById(Number(visitId), { signal }), [visitId]);
 
@@ -48,11 +41,8 @@ const CaregiverVisit = () => {
     const [confirmNoSignature, setConfirmNoSignature] = useState(false);
 
 
-    // The patient is a SECOND read, and it waits on the first: the visit is what
-    // knows which patient this is, so it is skipped until there is an id. Its
-    // failure is deliberately silent, which is why only `data` is taken here.
-    // Marcus is standing on a doorstep, and losing the check-in button because
-    // an address could not load would be the worse outcome.
+    // Waits on the visit for the patient id. Its failure is silent: an address that
+    // fails to load must not cost Marcus the check-in button.
     const { data: patient } = useAsyncData(
         (signal) => getPatientById(visit.patientId, { signal }),
         [visit?.patientId],
@@ -62,9 +52,7 @@ const CaregiverVisit = () => {
         setError(null);
         setCheckingIn(true);
         try {
-            // Ask the device first, then hand the answer to the service. This
-            // never throws and never blocks: a refused or unreachable fix still
-            // checks the caregiver in, it just records that it was not captured.
+            // Never throws: a refused fix still checks in, recorded as not captured.
             const location = await getCurrentLocation();
             const newVisit = await checkInVisit(visit.id, location);
             setVisit(newVisit)
@@ -79,7 +67,6 @@ const CaregiverVisit = () => {
         e.preventDefault();
         setError(null);
 
-        //flag at door first to warn about submission without signature
         if (!signature.trim() && !confirmNoSignature) {
             setConfirmNoSignature(true);
             return;
@@ -111,13 +98,9 @@ const CaregiverVisit = () => {
         }
     }
 
-    // sessionLoading as well as loading: the visit comes back from the API in
-    // milliseconds while the session is still rehydrating, and the ownership
-    // check below would read a null user and refuse a visit that is yours.
+    // Wait for the session too, or the ownership check below reads a null user.
     if (sessionLoading || loading) return (<p>Loading...</p>);
 
-    // A caregiver standing at a door needs to know the difference between
-    // "this visit is not yours" and "we could not reach the office".
     if (loadError) return (
         <LoadError
             message={`This visit could not load. ${loadError.message}`}
@@ -127,10 +110,7 @@ const CaregiverVisit = () => {
 
     if (!visit) return (<p>Visit not found. <Link to="/visits">Back to visits</Link></p>);
 
-    // The visit id comes from the URL, so without this a caregiver could type a
-    // colleague's visit and check it out. Not-found rather than a refusal,
-    // because whose visit it is is not theirs to learn. An admin reaches this
-    // page deliberately, from the visit's read surface.
+    // The id comes from the URL, so check ownership. Not found rather than a refusal.
     if (!isAdmin && visit.caregiverId !== user?.caregiverId) {
         return (<p>Visit not found. <Link to="/my-visits">Back to my visits</Link></p>);
     }
@@ -162,8 +142,6 @@ const CaregiverVisit = () => {
                 <dt>Service</dt>
                 <dd>{SERVICE_TYPE_LABEL[visit.serviceType] ?? visit.serviceType}</dd>
 
-                {/* Where Marcus is actually going. The app knew this all along
-                    and showed it only to the office, on a page he cannot reach. */}
                 {patient?.address && (
                     <>
                         <dt>Address</dt>
@@ -172,9 +150,6 @@ const CaregiverVisit = () => {
                 )}
             </dl>
 
-            {/* What this patient needs help with in general, as opposed to what
-                they raise during one visit. Standing context belongs before the
-                work, not only in a record Denise can see. */}
             {patient?.standingConcerns && (
                 <p className={styles.standingConcerns}>
                     <strong>Needs help with:</strong> {patient.standingConcerns}
@@ -215,8 +190,7 @@ const CaregiverVisit = () => {
                             placeholder="Patient types their full name"
                         />
 
-                        {/* warning state for signature*/
-                            showNoSignatureWarning && (
+                        {showNoSignatureWarning && (
                                 <p className={styles.warningNote}>
                                     No patient signature. This visit will be flagged for review at check-out.
                                 </p>
@@ -272,7 +246,6 @@ const CaregiverVisit = () => {
                             </>
                         )}
 
-                        {/* pending flag + disabled */}
                         <button type="submit" className={styles.checkOutButton} disabled={checkingOut}>
                             { checkingOut ? "Submitting..." : "Submit Evidence" }
                         </button>

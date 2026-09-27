@@ -21,9 +21,7 @@ const Homepage = () => {
         setError(null);
         setSigningIn(true);
         try {
-            // Route off the returned user, not off the context's `user`.
-            // That one is still null in this closure: setState scheduled it,
-            // it did not rewrite the variable this render already captured.
+            // Route off the returned user; the context's `user` is still null in this closure.
             const signedIn = await login(email, password);
             navigate(hasRole(signedIn, ROLES.ADMIN) ? "/dashboard" : "/my-visits");
         } catch (err) {
@@ -34,9 +32,7 @@ const Homepage = () => {
     }
     return (
         <div className={styles.page}>
-            {/* The alt describes the graphic rather than restating the brand,
-                so a screen reader does not read "Vera" twice in a row with the
-                <h1> immediately below it. */}
+            {/* Alt describes the graphic so a screen reader does not read "Vera" twice. */}
             <img
                 className={styles.watermark}
                 src={veraMark}

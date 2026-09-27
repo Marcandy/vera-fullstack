@@ -10,8 +10,6 @@ import com.vera.api.visit.VisitRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// The rules live here: a new hire gets a blank checklist, and a caregiver
-// with visits is not deleted. The controller maps HTTP; the entity holds rows.
 @Service
 public class CaregiverService {
 
