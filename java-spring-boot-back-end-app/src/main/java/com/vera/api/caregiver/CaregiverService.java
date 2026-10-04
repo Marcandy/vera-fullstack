@@ -5,6 +5,7 @@ import static com.vera.api.Inputs.blankToNull;
 import com.vera.api.IllegalTransitionException;
 import com.vera.api.InvalidInputException;
 import com.vera.api.NotFoundException;
+import com.vera.api.user.UserAccountRepository;
 import com.vera.api.visit.VisitRepository;
 
 import org.springframework.stereotype.Service;
@@ -15,10 +16,13 @@ public class CaregiverService {
 
     private final CaregiverRepository caregivers;
     private final VisitRepository visits;
+    private final UserAccountRepository users;
 
-    CaregiverService(CaregiverRepository caregivers, VisitRepository visits) {
+    CaregiverService(CaregiverRepository caregivers, VisitRepository visits,
+            UserAccountRepository users) {
         this.caregivers = caregivers;
         this.visits = visits;
+        this.users = users;
     }
 
     @Transactional
@@ -56,6 +60,10 @@ public class CaregiverService {
         if (visits.existsByCaregiver_Id(id)) {
             throw new IllegalTransitionException(
                     "Cannot delete a caregiver who has visits");
+        }
+        if (users.existsByCaregiver_Id(id)) {
+            throw new IllegalTransitionException(
+                    "Cannot delete a caregiver who has a sign-in");
         }
 
         caregivers.delete(caregiver);
