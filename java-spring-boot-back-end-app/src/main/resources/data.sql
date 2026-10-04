@@ -20,6 +20,11 @@ INSERT IGNORE INTO caregivers (id, name, phone) VALUES
 (4, 'Luis Rivera',     '215-555-0163'),
 (5, 'Angela Brooks',   '215-555-0129');
 
+-- Sign-ins for the two personas. The demo password is kept out of the repo.
+INSERT IGNORE INTO users (id, email, password_hash, name, role, caregiver_id, enabled) VALUES
+(1, 'denise@agency.com', '{bcrypt}$2a$10$PQAFJh/m4GexZqlVKMxbr.esZEQZu3DPVrsmYmatwvkTjqhPmUBTO', 'Denise Carter', 'ADMIN',     NULL, TRUE),
+(2, 'marcus@agency.com', '{bcrypt}$2a$10$PQAFJh/m4GexZqlVKMxbr.esZEQZu3DPVrsmYmatwvkTjqhPmUBTO', 'Marcus Reed',   'CAREGIVER', 1,    TRUE);
+
 -- Only caregivers 1 to 5 are rewritten; API-created hires keep their rows.
 DELETE FROM documents WHERE caregiver_id BETWEEN 1 AND 5;
 
