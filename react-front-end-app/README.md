@@ -33,12 +33,11 @@ src/
   utils/        pure derivations: status, attention, documents, formatting
   hooks/        useAsyncData, useDebounced, useNow
   context/      the session, and nothing else
-  data/         mock fixtures, until the API replaces them
 ```
 
 Two rules worth knowing before changing anything here:
 
-**Components never import from `data/`.** Every read goes through `services/`,
+**Components access data through `services/`.** Every read goes through that boundary,
 which is what lets the Spring Boot API replace the mock internals without a
 single component changing.
 
@@ -59,4 +58,4 @@ data behind it.
 - Debouncing belongs to the input, not to the request. `useDebounced` lags the search box's value, and everything downstream simply reacts to a value that changes less often. That is why a status chip, which is clicked rather than typed, updates immediately without anyone special-casing it.
 - The caregiver's screen answers what to do next, not what has ever happened. It used to list every visit ever assigned, oldest first, which put three already-billed visits from last month above the one job happening today. It now separates today's work, visits held waiting on evidence only that caregiver can supply, and earlier history, and a visit belongs to exactly one of them. Today is decided in LOCAL time rather than by comparing the ISO date, because a caregiver's day is the day where they are standing and a 7pm Philadelphia visit is already tomorrow in UTC.
 - `locationService` sits alongside the data services but is a device adapter, not a repository: no backend will ever replace it, because the device is the only authority on where it is. It resolves a result object rather than rejecting, since a refused permission is an ordinary outcome of a real check-in and not an exception.
-- The signed-in user is the only thing in React Context. Server data stays out of it: visits in Context would be a cache with no invalidation or staleness policy. The session stores a user id and rehydrates through the service on boot, the same shape a real client uses when it trades a token for `GET /api/auth/me`, which is why the session has three states rather than two: unknown, none, and a user.
+- React Context holds the session and its loading/error state. Visits stay in the pages that use them. On boot, `GET /api/auth/me` restores the user from the server's HttpOnly session cookie; the browser stores no login token or user id. Unknown, signed out and signed in are separate states, and a failed lookup offers a retry. Sign-out only clears the user after the server confirms it. Responses from an earlier session cannot clear a newer sign-in.

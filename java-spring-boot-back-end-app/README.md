@@ -43,8 +43,10 @@ that do not need a database come later.
 
 ## Confirming it is up
 
-`http://localhost:8080/api/visits` returning JSON means the application started,
-connected and is serving. A connection refused means it is not, and a Whitelabel
+`http://localhost:8080/api/auth/me` answering 204 means the application started,
+connected and is serving. Protected reads answer 401 until you sign in.
+`AuthController.login` still needs its numbered TODOs implemented before sign-in
+works on this branch. A connection refused means the API is not running, and a Whitelabel
 404 on a path that should exist means the application is up but that controller
 is not mapped.
 
@@ -62,6 +64,9 @@ sub-resources named for the event that causes them rather than onto CRUD:
 
 | Service function | Endpoint |
 | --- | --- |
+| `login(email, password)` | `POST /api/auth/login` |
+| `getCurrentUser()` | `GET /api/auth/me` |
+| `logout()` | `POST /api/auth/logout` |
 | `getVisits(query)` | `GET /api/visits` |
 | `getVisitById(id)` | `GET /api/visits/{id}` |
 | `getVisitCounts()` | `GET /api/visits/counts` |
@@ -183,6 +188,7 @@ those.
 
 ### Live endpoints
 
+- `GET /api/auth/me` and `POST /api/auth/logout`; `POST /api/auth/login` is mapped but its implementation is the remaining exercise
 - `GET /api/visits`, with optional `status`, `q`, `caregiverId` and `patientId`
 - `GET /api/visits/{id}`
 - `GET /api/visits/counts`
