@@ -10,14 +10,24 @@ const navLinkClass = ({ isActive }) =>
 
 const Layout = () => {
     const [menuOpen, setMenuOpen] = useState(false);
-    const { user, loading, logout } = useSession();
+    const [signingOut, setSigningOut] = useState(false);
+    const [signOutError, setSignOutError] = useState(null);
+    const { user, loading, sessionError, logout } = useSession();
     const navigate = useNavigate();
 
     const isAdmin = hasRole(user, ROLES.ADMIN);
 
     async function handleSignOut() {
-        await logout();
-        navigate("/");
+        if (signingOut) return;
+        setSigningOut(true);
+        setSignOutError(null);
+        try {
+            await logout(() => navigate("/", { replace: true, state: null }));
+        } catch (error) {
+            setSignOutError(`Could not sign out. ${error.message}`);
+        } finally {
+            setSigningOut(false);
+        }
     }
 
     return (
@@ -33,16 +43,18 @@ const Layout = () => {
                     </svg>
                     Vera
                 </h1>
-                {!loading && user && (
+                {!loading && !sessionError && user && (
                     <div className={styles.session}>
                         <span className={styles.sessionUser}>{user.name}</span>
                         <button
                             type="button"
                             className={styles.signOutButton}
                             onClick={handleSignOut}
+                            disabled={signingOut}
                         >
-                            Sign out
+                            {signingOut ? "Signing out..." : "Sign out"}
                         </button>
+                        {signOutError && <span role="alert">{signOutError}</span>}
                     </div>
                 )}
 
@@ -60,7 +72,7 @@ const Layout = () => {
             <aside className={menuOpen ? `${styles.sidebar} ${styles.open}` : styles.sidebar}>
                 {/* clicking any link also closes the phone menu; no effect on desktop */}
                 {/* Waits for the session, or the admin nav would flash at a caregiver. */}
-                {!loading && (
+                {!loading && !sessionError && (
                     <nav onClick={() => setMenuOpen(false)}>
                         {!user && (
                             <NavLink to="/" className={navLinkClass}>Sign in</NavLink>
