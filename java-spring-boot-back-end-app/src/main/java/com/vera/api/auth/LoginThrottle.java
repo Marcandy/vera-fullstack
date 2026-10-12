@@ -2,56 +2,73 @@ package com.vera.api.auth;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 
-// Counts failed sign-ins in memory, so it only holds for a single instance.
+// Counts sign-in attempts in memory, so it only holds for a single instance.
 // Keyed by email and client address together, so a stranger cannot lock Marcus
 // out from somewhere else; the looser per-email cap slows stuffing spread across
 // many addresses.
 @Component
 public class LoginThrottle {
 
-    static final int MAX_FAILURES_PER_CLIENT = 5;
-    static final int MAX_FAILURES_PER_EMAIL = 20;
+    static final int MAX_ATTEMPTS_PER_CLIENT = 5;
+    static final int MAX_ATTEMPTS_PER_EMAIL = 20;
     static final Duration WINDOW = Duration.ofMinutes(15);
 
-    // Sprayed random emails would otherwise grow the map without bound.
-    private static final int PRUNE_ABOVE = 10_000;
+    private static final int MAX_KEYS = 10_000;
 
-    private final Map<String, Window> failures = new ConcurrentHashMap<>();
+    private final Map<String, Window> attempts = new HashMap<>();
 
-    public void check(String email, String clientAddress, Instant now) {
+    // Counts the attempt BEFORE the password is checked. Counting failures
+    // afterwards lets a burst of parallel requests all pass the check first.
+    public synchronized void attempt(String email, String clientAddress, Instant now) {
+        String clientKey = clientKey(email, clientAddress);
+        String emailKey = emailKey(email);
+        int newKeys = (attempts.containsKey(clientKey) ? 0 : 1)
+                + (attempts.containsKey(emailKey) ? 0 : 1);
+        if (attempts.size() + newKeys > MAX_KEYS) {
+            attempts.values().removeIf(window -> window.expired(now));
+            newKeys = (attempts.containsKey(clientKey) ? 0 : 1)
+                    + (attempts.containsKey(emailKey) ? 0 : 1);
+            if (attempts.size() + newKeys > MAX_KEYS) {
+                long retryAfter = attempts.values().stream()
+                        .mapToLong(window -> secondsRemaining(window, now))
+                        .min().orElse(1);
+                throw new TooManyAttemptsException(retryAfter);
+            }
+        }
         long retryAfter = Math.max(
-                secondsBlocked(clientKey(email, clientAddress), MAX_FAILURES_PER_CLIENT, now),
-                secondsBlocked(emailKey(email), MAX_FAILURES_PER_EMAIL, now));
+                count(clientKey, MAX_ATTEMPTS_PER_CLIENT, now),
+                count(emailKey, MAX_ATTEMPTS_PER_EMAIL, now));
         if (retryAfter > 0) {
             throw new TooManyAttemptsException(retryAfter);
         }
     }
 
-    public void recordFailure(String email, String clientAddress, Instant now) {
-        if (failures.size() > PRUNE_ABOVE) {
-            failures.values().removeIf(window -> window.expired(now));
-        }
-        Window first = new Window(now, 1);
-        failures.merge(clientKey(email, clientAddress), first, (current, ignored) -> current.next(now));
-        failures.merge(emailKey(email), first, (current, ignored) -> current.next(now));
+    // A good password clears this client and gives back the one attempt it
+    // added to the email's count, so the owner signing in never locks themselves.
+    public synchronized void succeeded(String email, String clientAddress) {
+        attempts.remove(clientKey(email, clientAddress));
+        attempts.computeIfPresent(emailKey(email), (key, window) -> window.count() <= 1
+                ? null
+                : new Window(window.start(), window.count() - 1));
     }
 
-    // Only the client's own count: a success here says nothing about attempts
-    // on the same email from elsewhere.
-    public void recordSuccess(String email, String clientAddress) {
-        failures.remove(clientKey(email, clientAddress));
-    }
-
-    private long secondsBlocked(String key, int limit, Instant now) {
-        Window window = failures.get(key);
-        if (window == null || window.expired(now) || window.count() < limit) {
+    // Seconds until the window resets when this attempt is over the limit, else 0.
+    private long count(String key, int limit, Instant now) {
+        Window window = attempts.compute(key, (k, current) -> current == null
+                ? new Window(now, 1)
+                : current.next(now));
+        if (window.count() <= limit) {
             return 0;
         }
+        return secondsRemaining(window, now);
+    }
+
+    private static long secondsRemaining(Window window, Instant now) {
         return Math.max(1, Duration.between(now, window.start().plus(WINDOW)).toSeconds());
     }
 
@@ -70,7 +87,8 @@ public class LoginThrottle {
         }
 
         Window next(Instant now) {
-            return expired(now) ? new Window(now, 1) : new Window(start, count + 1);
+            return expired(now) ? new Window(now, 1)
+                    : new Window(start, Math.min(count + 1, MAX_ATTEMPTS_PER_EMAIL + 1));
         }
     }
 }
