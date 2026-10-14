@@ -119,9 +119,7 @@ npm run dev
 
 It serves on `http://localhost:5173` and proxies `/api` to the API, so the browser sees one origin and CORS stays a production concern.
 
-On this branch, `AuthController.login` is the remaining implementation step. Its numbered TODOs cover credential validation, authentication, session persistence and the idle timeout.
-
-Once that method is implemented, sign in with `denise@agency.com` (administrator) or `marcus@agency.com` (caregiver) and the demo password, which is shared with reviewers rather than kept in the repository. Passwords are stored as bcrypt hashes, and the server holds the session in an HttpOnly cookie. Session restoration, CSRF protection, sign-out and the frontend are wired.
+Sign in with `denise@agency.com` (administrator) or `marcus@agency.com` (caregiver) and the demo password, which is shared with reviewers rather than kept in the repository. Passwords are stored as bcrypt hashes, and the server holds the session in an HttpOnly cookie. Sessions expire after 30 idle minutes for administrators or 8 idle hours for caregivers.
 
 ## Manual testing
 

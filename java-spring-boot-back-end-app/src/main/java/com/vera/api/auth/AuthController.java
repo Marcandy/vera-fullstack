@@ -1,8 +1,17 @@
 package com.vera.api.auth;
 
+import java.time.Instant;
+import java.util.Locale;
+
+import com.vera.api.Inputs;
+import com.vera.api.InvalidInputException;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
@@ -39,19 +48,43 @@ public class AuthController {
     @PostMapping("/login")
     public AuthUserResponse login(@RequestBody(required = false) LoginRequest body,
             HttpServletRequest request, HttpServletResponse response) {
-        // TODO 1 Reject a missing body or blank credentials (400). Trim and lowercase
-        // the email with Locale.ROOT; keep the password exactly as submitted.
-        // TODO 2 Count the attempt with throttle.attempt(email, remote address, now).
-        // TODO 3 Authenticate with authenticationManager. Let failures reach the advice.
-        // TODO 4 Call throttle.succeeded after authentication succeeds.
-        // TODO 5 Change an existing session id, then call
-        // csrfAuthenticationStrategy.onAuthentication(authentication, request, response).
-        // TODO 6 Create and set a security context, then explicitly save it with
-        // securityContextRepository so the next request remains signed in.
-        // TODO 7 Set the session's max inactive interval from the principal's role,
-        // using seconds: 30 minutes for ADMIN, 8 hours for CAREGIVER.
-        // TODO 8 Return AuthUserResponse.from(the authenticated VeraUserDetails).
-        throw new UnsupportedOperationException("Sign-in is awaiting implementation");
+        if (body == null) {
+            throw new InvalidInputException("Sign-in request is required");
+        }
+
+        String email = Inputs.blankToNull(body.email());
+        String password = body.password();
+
+        if (email == null) {
+            throw new InvalidInputException("Email is required");
+        }
+        if (password == null || password.isBlank()) {
+            throw new InvalidInputException("Password is required");
+        }
+
+        email = email.toLowerCase(Locale.ROOT);
+        String clientAddress = request.getRemoteAddr();
+        throttle.attempt(email, clientAddress, Instant.now());
+
+        Authentication authentication = authenticationManager.authenticate(
+                UsernamePasswordAuthenticationToken.unauthenticated(email, password));
+        throttle.succeeded(email, clientAddress);
+
+        if (request.getSession(false) != null) {
+            request.changeSessionId();
+        }
+        csrfAuthenticationStrategy.onAuthentication(authentication, request, response);
+
+        VeraUserDetails user = (VeraUserDetails) authentication.getPrincipal();
+        SecurityContext context = securityContextHolderStrategy.createEmptyContext();
+        context.setAuthentication(authentication);
+        securityContextHolderStrategy.setContext(context);
+        securityContextRepository.saveContext(context, request, response);
+
+        request.getSession().setMaxInactiveInterval(
+                Math.toIntExact(user.getRole().idleTimeout().toSeconds()));
+
+        return AuthUserResponse.from(user);
     }
 
     // 204 when signed out, so the frontend reads "nobody" without an error.

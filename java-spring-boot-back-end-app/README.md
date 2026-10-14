@@ -45,8 +45,7 @@ that do not need a database come later.
 
 `http://localhost:8080/api/auth/me` answering 204 means the application started,
 connected and is serving. Protected reads answer 401 until you sign in.
-`AuthController.login` still needs its numbered TODOs implemented before sign-in
-works on this branch. A connection refused means the API is not running, and a Whitelabel
+A connection refused means the API is not running, and a Whitelabel
 404 on a path that should exist means the application is up but that controller
 is not mapped.
 
@@ -188,7 +187,7 @@ those.
 
 ### Live endpoints
 
-- `GET /api/auth/me` and `POST /api/auth/logout`; `POST /api/auth/login` is mapped but its implementation is the remaining exercise
+- `POST /api/auth/login`, `GET /api/auth/me` and `POST /api/auth/logout`
 - `GET /api/visits`, with optional `status`, `q`, `caregiverId` and `patientId`
 - `GET /api/visits/{id}`
 - `GET /api/visits/counts`
