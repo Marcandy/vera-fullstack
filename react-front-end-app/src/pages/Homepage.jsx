@@ -1,10 +1,18 @@
 import { useState } from "react";
 import styles from "./Homepage.module.css";
 import veraMark from "../assets/vera-mark.png";
-import { useNavigate } from "react-router";
+import { Navigate, useLocation, useNavigate } from "react-router";
 import Footer from "../components/Footer";
+import LoadError from "../components/LoadError";
 import { useSession } from "../context/sessionContext";
 import { hasRole, ROLES } from "../utils/roles";
+
+const signInDestination = (user, from) => {
+    const home = hasRole(user, ROLES.ADMIN) ? "/dashboard" : "/my-visits";
+    return typeof from?.pathname === "string" && from.pathname !== "/"
+        && from.pathname.startsWith("/") && !from.pathname.startsWith("//")
+        ? `${from.pathname}${from.search ?? ""}${from.hash ?? ""}` : home;
+};
 
 const Homepage = () => {
 
@@ -14,22 +22,32 @@ const Homepage = () => {
     const [signingIn, setSigningIn] = useState(false);
 
     const navigate = useNavigate();
-    const { login } = useSession();
+    const location = useLocation();
+    const { user, loading, sessionError, retrySession, login } = useSession();
 
     async function handleLogin(e) {
         e.preventDefault();
+        if (signingIn) return;
         setError(null);
         setSigningIn(true);
         try {
             // Route off the returned user; the context's `user` is still null in this closure.
             const signedIn = await login(email, password);
-            navigate(hasRole(signedIn, ROLES.ADMIN) ? "/dashboard" : "/my-visits");
+            // Back to the page that sent them here, if a protected link did.
+            navigate(signInDestination(signedIn, location.state?.from), { replace: true, state: null });
         } catch (err) {
             setError(err.message);
         } finally {
             setSigningIn(false);
         }
     }
+
+    if (loading) return <p>Checking your session...</p>;
+    if (sessionError) return <LoadError message={sessionError} onRetry={retrySession} />;
+    if (user) {
+        return <Navigate to={signInDestination(user, location.state?.from)} replace state={null} />;
+    }
+
     return (
         <div className={styles.page}>
             {/* Alt describes the graphic so a screen reader does not read "Vera" twice. */}
@@ -77,16 +95,15 @@ const Homepage = () => {
                             onChange={(e)=> setPassword(e.target.value)}
                         />
                     </div>
-                    {error && <p className={styles.errorNote}>{error}</p>}
+                    {error && <p className={styles.errorNote} role="alert">{error}</p>}
 
                     <button type="submit" className={styles.signInButton} disabled={signingIn}>
                         {signingIn ? "Signing in..." : "Sign In"}
                     </button>
                     <p className={styles.demoNote}>
-                        Demo app: sign-in is simulated and the password is not
-                        checked. Use <strong>denise@agency.com</strong> for the
-                        administrator view or <strong>marcus@agency.com</strong> for
-                        the caregiver view, with any password.
+                        Demo app with fake data. Use <strong>denise@agency.com</strong> for
+                        the administrator view or <strong>marcus@agency.com</strong> for
+                        the caregiver view, with the demo password you were given.
                     </p>
                 </form>
             </section>

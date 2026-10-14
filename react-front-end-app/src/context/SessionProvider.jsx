@@ -1,44 +1,94 @@
-import { useEffect, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import { SessionContext } from "./sessionContext";
-import { getCurrentUser, login as loginRequest, logout as logoutRequest } from "../services/authService";
+import {
+    getCurrentUser,
+    login as loginRequest,
+    logout as logoutRequest,
+    onSessionEnded,
+} from "../services/authService";
 
 export const SessionProvider = ({ children }) => {
     const [user, setUser] = useState(null);
 
     // Unknown is not signed out: without this the logged-out view flashes on first paint.
     const [loading, setLoading] = useState(true);
+    const [sessionError, setSessionError] = useState(null);
+    const [reloadKey, setReloadKey] = useState(0);
+    const operationVersion = useRef(0);
 
     useEffect(() => {
-        let stale = false;
+        onSessionEnded(() => {
+            operationVersion.current += 1;
+            setUser(null);
+            setLoading(false);
+            setSessionError(null);
+        });
+        return () => onSessionEnded(null);
+    }, []);
+
+    useEffect(() => {
+        const version = ++operationVersion.current;
+        const controller = new AbortController();
         async function restoreSession() {
-            const restored = await getCurrentUser();
-            if (!stale) {
+            try {
+                const restored = await getCurrentUser({ signal: controller.signal });
+                if (controller.signal.aborted || version !== operationVersion.current) return;
                 setUser(restored);
-                setLoading(false);
+                setSessionError(null);
+            } catch (error) {
+                if (controller.signal.aborted || version !== operationVersion.current) return;
+                setSessionError(error.message);
+            } finally {
+                if (!controller.signal.aborted && version === operationVersion.current) {
+                    setLoading(false);
+                }
             }
         }
         restoreSession();
-        return () => { stale = true; };
-    }, []);
+        return () => controller.abort();
+    }, [reloadKey]);
 
-    // Returns the user so a caller can route by role now; its `user` is still the old closure's.
-    async function login(email, password) {
-        const signedIn = await loginRequest(email, password);
-        setUser(signedIn);
-        return signedIn;
+    function retrySession() {
+        operationVersion.current += 1;
+        setLoading(true);
+        setSessionError(null);
+        setReloadKey((previous) => previous + 1);
     }
 
-    // finally: the local session ends even if the sign-out request fails.
-    async function logout() {
+    // A late restoration or expired request cannot overwrite a newer sign-in.
+    async function login(email, password) {
+        const version = ++operationVersion.current;
         try {
-            await logoutRequest();
+            const signedIn = await loginRequest(email, password);
+            if (version !== operationVersion.current) {
+                throw new Error("Your session changed. Try signing in again.");
+            }
+            setUser(signedIn);
+            setSessionError(null);
+            return signedIn;
         } finally {
-            setUser(null);
+            if (version === operationVersion.current) {
+                setLoading(false);
+            }
+        }
+    }
+
+    // Keep the user signed in when the server cannot confirm sign-out.
+    async function logout(onSuccess) {
+        const version = ++operationVersion.current;
+        await logoutRequest();
+        if (version === operationVersion.current) {
+            // Match the router's transition so the guard cannot redirect in between.
+            startTransition(() => {
+                onSuccess?.();
+                setUser(null);
+                setSessionError(null);
+            });
         }
     }
 
     return (
-        <SessionContext.Provider value={{ user, loading, login, logout }}>
+        <SessionContext.Provider value={{ user, loading, sessionError, retrySession, login, logout }}>
             {children}
         </SessionContext.Provider>
     );

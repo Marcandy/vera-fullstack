@@ -40,7 +40,7 @@ Open each half in its own IDE rather than opening this repository as a whole: th
 
 **For the caregiver (phone-width surface, one primary action per screen):**
 
-- My visits: today's assigned visits in the order they happen, then anything held waiting on evidence only this caregiver can supply, then earlier work. The caregiver id comes from the session and never from the URL, so there is no address to type that reveals a colleague's patients
+- My visits: today's assigned visits in the order they happen, then anything held waiting on evidence only this caregiver can supply, then earlier work. The screen gets the caregiver id from the session. Server-side role and ownership enforcement is tracked separately in issue #8.
 - My documents: their own onboarding checklist, whether they are cleared to work and what is holding it, and how long is left on anything expiring. A caregiver can sign a document themselves or send in a renewal, which is how the real products work, but sending it in does not make it count: it waits for the office to check it, because the agency is what has to produce a valid credential at a survey and one that cleared itself is one nobody checked
 - Check in on arrival; the system stamps the time and records the device's location when the caregiver allows it. A refused or unreachable location is recorded as unavailable, with the reason, and never blocks the check-in
 - Check out with a visit assessment and the patient's typed signature. Checking out without a signature warns first, then flags the visit for review instead of blocking the caregiver from leaving
@@ -119,7 +119,7 @@ npm run dev
 
 It serves on `http://localhost:5173` and proxies `/api` to the API, so the browser sees one origin and CORS stays a production concern.
 
-Sign in with `denise@agency.com` (administrator) or `marcus@agency.com` (caregiver). Any password is accepted: the demo sign-in is not real authentication.
+Sign in with `denise@agency.com` (administrator) or `marcus@agency.com` (caregiver) and the demo password, which is shared with reviewers rather than kept in the repository. Passwords are stored as bcrypt hashes, and the server holds the session in an HttpOnly cookie. Sessions expire after 30 idle minutes for administrators or 8 idle hours for caregivers.
 
 ## Manual testing
 
@@ -147,14 +147,17 @@ Automated testing was out of scope for this phase, so testing is a scripted manu
 | No search match | Search a name nobody has | Message naming the query, with a control to clear the filters |
 | Bad filter in the URL | Open /visits?status=bogus | Falls back to the unfiltered list rather than a blank screen |
 | Empty filter result | Filter to a status with no visits | Message naming that status, with a control to clear the filters |
-| Demo sign-in, admin | Sign in as `denise@agency.com` | Lands on the dashboard; nav shows visit list, caregivers, billing |
-| Demo sign-in, caregiver | Sign in as `marcus@agency.com` | Lands on My visits showing today's three visits first, nobody else's; nav shows only My visits |
+| Sign in, admin | Sign in as `denise@agency.com` | Lands on the dashboard; nav shows visit list, caregivers, billing |
+| Sign in, caregiver | Sign in as `marcus@agency.com` | Lands on My visits showing today's three visits first, nobody else's; nav shows only My visits |
 | A caregiver's day | Note the sections on My visits | Today, then Waiting on you, then Earlier. A visit appears in exactly one of them |
 | Held visit reaches its owner | Check out a visit with no signature, return to My visits | It leaves Today and appears under Waiting on you, which is the only place it can be cleared from |
 | Where am I going | Open a visit from My visits | The patient's address and what they need help with in general, before the check-in button |
-| Unknown account | Sign in with any other email | Inline error from the service; stays on the home page |
+| Wrong password or unknown account | Sign in with a wrong password, then with any other email | The same message both times, so the form never reveals which emails have accounts |
+| Signed-out link | Sign out, then open `/visits/3` | Sent to sign in; after signing in, lands on visit 3 |
 | Session persistence | Sign in, then reload the page | Still signed in, same role, with no flash of the signed-out view |
 | Sign out | Use the banner control | Returns to the home page; reloading does not restore the session |
+| Sign-out fails | Make the sign-out request fail | Error shown; the user stays signed in and can retry |
+| Session lookup fails | Make `/api/auth/me` fail, then retry | Retryable error; a protected link stays in place until the session is known |
 | Submit claim | On Billing, submit a ready-to-bill claim | Confirmation with a claim reference; row moves to Submitted claims; both totals update |
 | Caregiver sees their own file | Sign in as a caregiver, open My documents | Their checklist, whether they are cleared, and how long is left on anything expiring |
 | Caregiver sends a renewal | Send in a file for an expiring document | Status does not change; the row says the office still has to check it, and the action disappears while one is pending |
@@ -190,7 +193,7 @@ Automated testing was out of scope for this phase, so testing is a scripted manu
 - Real document storage: the upload records a file's name, size and type, and a backend is what would hold the bytes
 - Per-document-type rules, so a CPR certification cannot be recorded without an expiry while a background check can
 - Drawn signature capture
-- Real authentication: hashed passwords, a token, and server-side authorization, replacing the demo sign-in
+- Authorization by role and caregiver ownership on the server, so being signed in is not enough to call an administrator's endpoint or read another caregiver's records
 - Prescriptions and medication reconciliation on the patient record, under a future skilled-care path
 - Real claim submission and remittance (837 and 835) to a payer or clearinghouse, replacing the mock
 - Stripe test-mode collection for private-pay clients
