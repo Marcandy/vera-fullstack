@@ -36,7 +36,7 @@ Document submissions remain metadata only; claims remain simulated.
 
 ## Pairing handoff
 
-The single remaining exercise will be `CurrentUser.requireOwnership`. Its
+The single remaining exercise is `CurrentUser.requireOwnership`. Its
 placeholder must deny access until the ownership comparison is implemented.
 Do not merge or deploy while this exercise remains unfinished.
 

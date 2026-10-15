@@ -6,6 +6,23 @@ front end, which reads it through a Vite proxy in development.
 Open this folder rather than the repository root, so that Maven imports the
 project and the React app's `node_modules` stays out of the index.
 
+## Access control
+
+The [access policy](../docs/access-control.md) defines the role matrix. HTTP
+rules deny unlisted routes, and service methods enforce role permissions through
+`@PreAuthorize`. Individual caregiver records and visits use
+`CurrentUser.requireOwnership`, whose denying placeholder remains the pairing
+exercise for issue #8.
+
+`SessionAccountFilter` checks current account access after Spring restores the
+saved security context. Deleted or disabled accounts, changed roles, and changed
+caregiver links invalidate the session. Database failures return 503 without
+signing the caller out. The check reads a projection without password hashes.
+
+Visit and document mutations acquire row locks inside their transactions before
+checking state. Visit assignment is checked after the lock. A missing or
+inaccessible record returns the same generic 404; a disallowed role returns 403.
+
 ## Running it
 
 Create the schema first. Hibernate creates tables, not databases:
@@ -66,7 +83,8 @@ sub-resources named for the event that causes them rather than onto CRUD:
 | `login(email, password)` | `POST /api/auth/login` |
 | `getCurrentUser()` | `GET /api/auth/me` |
 | `logout()` | `POST /api/auth/logout` |
-| `getVisits(query)` | `GET /api/visits` |
+| `getVisits(query)` | `GET /api/visits` (administrator) |
+| `getMyVisits()` | `GET /api/visits/mine` (session's caregiver) |
 | `getVisitById(id)` | `GET /api/visits/{id}` |
 | `getVisitCounts()` | `GET /api/visits/counts` |
 | `checkInVisit(id)` | `POST /api/visits/{id}/check-in` |
@@ -180,15 +198,15 @@ Two mistakes are invisible from Java and obvious here: an ordinal enum storing
 `0` and `1` where a name belongs, and an `Instant` landing in a column type
 that discards the offset.
 
-Seed data comes last, from a `CommandLineRunner` guarded by
-`if (repository.count() == 0)`, not from `data.sql`. The demo timestamps are
-offsets from the day the application starts, and static SQL cannot compute
-those.
+`data.sql` seeds fictional data after Hibernate prepares the schema. SQL computes
+the demo timestamps relative to startup. Disable seeding when preserving local
+writes, and use migrations rather than startup seeding for deployment.
 
 ### Live endpoints
 
 - `POST /api/auth/login`, `GET /api/auth/me` and `POST /api/auth/logout`
 - `GET /api/visits`, with optional `status`, `q`, `caregiverId` and `patientId`
+- `GET /api/visits/mine`, with ownership derived from the principal
 - `GET /api/visits/{id}`
 - `GET /api/visits/counts`
 - `GET /api/patients`
@@ -234,8 +252,11 @@ a list needs no second call per row. Handing Jackson an entity hands it a lazy
 proxy, which either throws or quietly loads each relation one row at a time.
 
 `VisitRepository` carries `search(status, q, caregiverId, patientId)` and
-`findByIdWithPeople(id)`, both using `join fetch v.patient join fetch v.caregiver`. The other two
-repositories are bare `JpaRepository<T, Long>`.
+`findByIdWithPeople(id)`, both using `join fetch v.patient join fetch v.caregiver`.
+Visit responses also carry the patient address and standing care needs, so the
+caregiver screen never needs permission to read the patient roster. Caregiver
+queries fetch their document checklist; document mutations use a locked,
+caregiver-scoped lookup.
 
 Write the plain `findAll()` first, set `spring.jpa.show-sql=true`, and run it.
 With `open-in-view=false` there is no open session at render time, so it throws
