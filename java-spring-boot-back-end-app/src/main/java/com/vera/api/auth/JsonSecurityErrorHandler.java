@@ -31,6 +31,11 @@ public class JsonSecurityErrorHandler implements AuthenticationEntryPoint, Acces
         write(response, HttpServletResponse.SC_FORBIDDEN, message);
     }
 
+    public void unavailable(HttpServletResponse response) throws IOException {
+        write(response, HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+                "The service is temporarily unavailable. Try again.");
+    }
+
     // Messages are constants above, so there is nothing to escape.
     private static void write(HttpServletResponse response, int status, String message)
             throws IOException {
