@@ -2,9 +2,6 @@ import { useState } from "react";
 import { useParams, Link } from "react-router";
 import StatusPill from "../components/StatusPill";
 import { checkInVisit, checkOutVisit, getVisitById, supplyEvidence } from "../services/visitService";
-import { getPatientById } from "../services/patientService";
-import { useSession } from "../context/sessionContext";
-import { hasRole, ROLES } from "../utils/roles";
 import styles from "./CaregiverVisit.module.css";
 import SignatureField from "../components/SignatureField";
 import LoadError from "../components/LoadError";
@@ -24,10 +21,6 @@ const EVIDENCE_LABELS = [
 
 const CaregiverVisit = () => {
     const { visitId } = useParams();
-    const { user, loading: sessionLoading } = useSession();
-
-    // Reached from two directions, so back means two things.
-    const isAdmin = hasRole(user, ROLES.ADMIN);
 
     const { data: visit, error: loadError, loading, reload, setData: setVisit } = useAsyncData(
         (signal) => getVisitById(Number(visitId), { signal }), [visitId]);
@@ -41,12 +34,7 @@ const CaregiverVisit = () => {
     const [confirmNoSignature, setConfirmNoSignature] = useState(false);
 
 
-    // Waits on the visit for the patient id. Its failure is silent: an address that
-    // fails to load must not cost Marcus the check-in button.
-    const { data: patient } = useAsyncData(
-        (signal) => getPatientById(visit.patientId, { signal }),
-        [visit?.patientId],
-        { skip: !visit?.patientId });
+    const patient = visit?.patient;
 
     async function handleCheckIn () {
         setError(null);
@@ -98,8 +86,7 @@ const CaregiverVisit = () => {
         }
     }
 
-    // Wait for the session too, or the ownership check below reads a null user.
-    if (sessionLoading || loading) return (<p>Loading...</p>);
+    if (loading) return (<p>Loading...</p>);
 
     if (loadError) return (
         <LoadError
@@ -108,12 +95,7 @@ const CaregiverVisit = () => {
         />
     );
 
-    if (!visit) return (<p>Visit not found. <Link to="/visits">Back to visits</Link></p>);
-
-    // The id comes from the URL, so check ownership. Not found rather than a refusal.
-    if (!isAdmin && visit.caregiverId !== user?.caregiverId) {
-        return (<p>Visit not found. <Link to="/my-visits">Back to my visits</Link></p>);
-    }
+    if (!visit) return (<p>Visit not found. <Link to="/my-visits">Back to my visits</Link></p>);
 
     const missingSignature = !signature.trim();
     const showNoSignatureWarning = confirmNoSignature && missingSignature;
@@ -124,8 +106,8 @@ const CaregiverVisit = () => {
 
     return (
         <section className={styles.caregiverVisit}>
-            <Link to={isAdmin ? `/visits/${visit.id}` : "/my-visits"} className={styles.backLink}>
-                {isAdmin ? "← Back to visit detail" : "← Back to my visits"}
+            <Link to="/my-visits" className={styles.backLink}>
+                ← Back to my visits
             </Link>
 
             <p className={styles.roleBanner}>Caregiver check-in</p>

@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import VisitCard from "../components/VisitCard";
-import { getVisitsByCaregiver } from "../services/visitService";
+import { getMyVisits } from "../services/visitService";
 import { useSession } from "../context/sessionContext";
 import { useNow } from "../hooks/useNow";
 import { useAsyncData } from "../hooks/useAsyncData";
@@ -21,12 +21,12 @@ const MyVisits = () => {
 
     const now = useNow();
 
-    // From the session, never the URL, or anyone could read a colleague's patients.
+    // The server derives the schedule from the same authenticated session.
     const caregiverId = user?.caregiverId ?? null;
 
     // Skipped for an admin, who has no caregiver record.
     const { data: visitList, error: loadError, loading: visitsLoading, reload } = useAsyncData(
-        (signal) => getVisitsByCaregiver(caregiverId, { signal }),
+        (signal) => getMyVisits({ signal }),
         [caregiverId],
         { skip: caregiverId === null });
 

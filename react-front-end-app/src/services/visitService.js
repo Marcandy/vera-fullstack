@@ -8,7 +8,11 @@ export const getVisits = async (filters = {}, { signal } = {}) =>
 export const getVisitCounts = async ({ signal } = {}) =>
     request("/visits/counts", { signal });
 
-// Its own verb because it will differ in authorization, not in query.
+// The server derives ownership from the session, without a caller-supplied filter.
+export const getMyVisits = async ({ signal } = {}) =>
+    request("/visits/mine", { signal });
+
+// The office uses this filter when viewing a caregiver's history.
 export const getVisitsByCaregiver = async (caregiverId, options) => {
     // Fail closed: a missing id must not answer with everybody's visits.
     if (caregiverId == null || caregiverId === "") {

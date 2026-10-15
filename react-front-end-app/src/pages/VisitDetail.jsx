@@ -143,9 +143,6 @@ const VisitDetail = () => {
                     </Link>
                 </h3>
                 <StatusPill status={visit.status} />
-                <Link to={`/caregiver/visits/${visit.id}`} className={styles.caregiverFlowLink}>
-                    Caregiver flow →
-                </Link>
             </div>
 
             {visit.status === VISIT_STATUS.NEEDS_REVIEW && (
