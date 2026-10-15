@@ -2,13 +2,7 @@ package com.vera.api.visit;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.vera.api.visit.VisitRepository.StatusCount;
-
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,11 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/visits")
 public class VisitController {
 
-    private final VisitRepository visits;
     private final VisitService visitService;
 
-    VisitController(VisitRepository visits, VisitService visitService) {
-        this.visits = visits;
+    VisitController(VisitService visitService) {
         this.visitService = visitService;
     }
 
@@ -38,30 +30,25 @@ public class VisitController {
             @RequestParam(required = false) Long caregiverId,
             @RequestParam(required = false) Long patientId) {
 
-        String search = StringUtils.hasText(q) ? q.trim() : null;
-
-        return visits.search(status, search, caregiverId, patientId).stream()
+        return visitService.search(status, q, caregiverId, patientId).stream()
                 .map(VisitResponse::from)
                 .toList();
+    }
+
+    @GetMapping("/mine")
+    public List<VisitResponse> getMyVisits() {
+        return visitService.mine().stream().map(VisitResponse::from).toList();
     }
 
     // The chips count the whole collection, not the filtered list.
     @GetMapping("/counts")
     public VisitCounts getVisitCounts() {
-        Map<VisitStatus, Long> byStatus = visits.countByStatus().stream()
-                .collect(Collectors.toMap(StatusCount::getStatus, StatusCount::getCount));
-
-        long total = byStatus.values().stream().mapToLong(Long::longValue).sum();
-
-        return new VisitCounts(total, byStatus);
+        return visitService.counts();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<VisitResponse> getVisitById(@PathVariable Long id) {
-        return visits.findByIdWithPeople(id)
-                .map(VisitResponse::from)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(VisitResponse.from(visitService.findById(id)));
     }
 
     @PostMapping

@@ -3,11 +3,15 @@ package com.vera.api.visit;
 import static com.vera.api.Inputs.blankToNull;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.vera.api.IllegalTransitionException;
 import com.vera.api.InvalidInputException;
 import com.vera.api.NotFoundException;
+import com.vera.api.auth.CurrentUser;
 import com.vera.api.caregiver.Caregiver;
 import com.vera.api.caregiver.CaregiverRepository;
 import com.vera.api.claim.Claim;
@@ -16,27 +20,64 @@ import com.vera.api.patient.Patient;
 import com.vera.api.patient.PatientRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 @Service
+@PreAuthorize("hasRole('ADMIN')")
 public class VisitService {
 
     private final VisitRepository visits;
     private final ClaimRepository claims;
     private final CaregiverRepository caregivers;
     private final PatientRepository patients;
+    private final CurrentUser currentUser;
 
     VisitService(VisitRepository visits, ClaimRepository claims,
-            CaregiverRepository caregivers, PatientRepository patients) {
+            CaregiverRepository caregivers, PatientRepository patients, CurrentUser currentUser) {
         this.visits = visits;
         this.claims = claims;
         this.caregivers = caregivers;
         this.patients = patients;
+        this.currentUser = currentUser;
     }
 
+    @Transactional(readOnly = true)
+    public List<Visit> search(VisitStatus status, String q, Long caregiverId, Long patientId) {
+        String search = StringUtils.hasText(q) ? q.trim() : null;
+        return visits.search(status, search, caregiverId, patientId);
+    }
+
+    @Transactional(readOnly = true)
+    public VisitCounts counts() {
+        Map<VisitStatus, Long> byStatus = visits.countByStatus().stream()
+                .collect(Collectors.toMap(VisitRepository.StatusCount::getStatus,
+                        VisitRepository.StatusCount::getCount));
+        long total = byStatus.values().stream().mapToLong(Long::longValue).sum();
+        return new VisitCounts(total, byStatus);
+    }
+
+    @PreAuthorize("hasRole('CAREGIVER')")
+    @Transactional(readOnly = true)
+    public List<Visit> mine() {
+        return visits.search(null, null, currentUser.caregiverId(), null);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAREGIVER')")
+    @Transactional(readOnly = true)
+    public Visit findById(Long id) {
+        Visit visit = load(id);
+        if (!currentUser.isAdmin()) {
+            currentUser.requireOwnership(visit.getCaregiver().getId());
+        }
+        return visit;
+    }
+
+    @PreAuthorize("hasRole('CAREGIVER')")
     @Transactional
     public Visit checkIn(Long id, CheckInRequest location) {
-        Visit visit = load(id);
+        Visit visit = loadOwnedForUpdate(id);
 
         if (visit.getStatus() != VisitStatus.SCHEDULED) {
             throw new IllegalTransitionException(
@@ -52,9 +93,10 @@ public class VisitService {
         return visit;
     }
 
+    @PreAuthorize("hasRole('CAREGIVER')")
     @Transactional
     public Visit checkOut(Long id, EvidenceRequest evidence) {
-        Visit visit = load(id);
+        Visit visit = loadOwnedForUpdate(id);
 
         if (visit.getStatus() != VisitStatus.IN_PROGRESS) {
             throw new IllegalTransitionException(
@@ -74,9 +116,10 @@ public class VisitService {
         return visit;
     }
 
+    @PreAuthorize("hasRole('CAREGIVER')")
     @Transactional
     public Visit supplyEvidence(Long id, EvidenceRequest evidence) {
-        Visit visit = load(id);
+        Visit visit = loadOwnedForUpdate(id);
 
         if (visit.getStatus() != VisitStatus.NEEDS_REVIEW) {
             throw new IllegalTransitionException(
@@ -104,8 +147,7 @@ public class VisitService {
 
     @Transactional
     public Visit submitClaim(Long id) {
-        Visit visit = visits.findByIdForUpdate(id)
-                .orElseThrow(() -> new NotFoundException("Visit " + id + " not found"));
+        Visit visit = loadForUpdate(id);
 
         if (visit.getStatus() != VisitStatus.READY_TO_BILL) {
             throw new IllegalTransitionException(
@@ -122,13 +164,12 @@ public class VisitService {
         visit.setClaim(saved);
         visit.setStatus(VisitStatus.BILLED);
 
-        // findByIdForUpdate does not join the response relations.
-        return load(id);
+        return visit;
     }
 
     @Transactional
     public Visit reschedule(Long id, RescheduleRequest request) {
-        Visit visit = load(id);
+        Visit visit = loadForUpdate(id);
 
         if (visit.getStatus() != VisitStatus.SCHEDULED) {
             throw new IllegalTransitionException(
@@ -156,7 +197,7 @@ public class VisitService {
 
     @Transactional
     public Visit cancel(Long id) {
-        Visit visit = load(id);
+        Visit visit = loadForUpdate(id);
 
         if (visit.getStatus() != VisitStatus.SCHEDULED) {
             throw new IllegalTransitionException(
@@ -205,6 +246,19 @@ public class VisitService {
 
         Visit saved = visits.save(visit);
         return load(saved.getId());
+    }
+
+    // Lock before reading ownership or status so reassignment and evidence cannot race.
+    private Visit loadOwnedForUpdate(Long id) {
+        Visit visit = loadForUpdate(id);
+        currentUser.requireOwnership(visit.getCaregiver().getId());
+        return visit;
+    }
+
+    private Visit loadForUpdate(Long id) {
+        visits.findByIdForUpdate(id)
+                .orElseThrow(() -> new NotFoundException("Record not found"));
+        return load(id);
     }
 
     // open-in-view is false, so the response relations load inside this transaction.

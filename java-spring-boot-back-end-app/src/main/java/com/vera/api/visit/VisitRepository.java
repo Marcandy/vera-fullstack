@@ -33,7 +33,7 @@ public interface VisitRepository extends JpaRepository<Visit, Long> {
     @Query("select v from Visit v join fetch v.patient join fetch v.caregiver left join fetch v.claim where v.id = :id")
     Optional<Visit> findByIdWithPeople(@Param("id") Long id);
 
-    // Serialize claim submissions on the visit before checking its status.
+    // Serialize all changes before checking assignment and status.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select v from Visit v where v.id = :id")
     Optional<Visit> findByIdForUpdate(@Param("id") Long id);
