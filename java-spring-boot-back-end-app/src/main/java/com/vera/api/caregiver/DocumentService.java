@@ -8,11 +8,14 @@ import java.time.temporal.ChronoUnit;
 import com.vera.api.IllegalTransitionException;
 import com.vera.api.InvalidInputException;
 import com.vera.api.NotFoundException;
+import com.vera.api.auth.CurrentUser;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@PreAuthorize("hasRole('ADMIN')")
 public class DocumentService {
 
     // Must match RENEWAL_WINDOW_DAYS in src/utils/documents.js.
@@ -20,10 +23,13 @@ public class DocumentService {
 
     private final CaregiverRepository caregivers;
     private final DocumentRepository documents;
+    private final CurrentUser currentUser;
 
-    DocumentService(CaregiverRepository caregivers, DocumentRepository documents) {
+    DocumentService(CaregiverRepository caregivers, DocumentRepository documents,
+            CurrentUser currentUser) {
         this.caregivers = caregivers;
         this.documents = documents;
+        this.currentUser = currentUser;
     }
 
     // Java twin of documentStatus() in src/utils/documents.js.
@@ -44,8 +50,10 @@ public class DocumentService {
     }
 
     // Server clock: a caller-chosen instant could make a lapsed card look signable.
+    @PreAuthorize("hasRole('CAREGIVER')")
     @Transactional
     public Caregiver sign(Long caregiverId, Long documentId, SignatureRequest request) {
+        currentUser.requireOwnership(caregiverId);
         if (request == null) {
             throw new InvalidInputException("Signature request is required");
         }
@@ -109,8 +117,10 @@ public class DocumentService {
 
     // Waits beside the live document until the office accepts it: a credential
     // that cleared itself is one nobody checked.
+    @PreAuthorize("hasRole('CAREGIVER')")
     @Transactional
     public Caregiver submitRenewal(Long caregiverId, Long documentId, DocumentFileRequest request) {
+        currentUser.requireOwnership(caregiverId);
         if (request == null) {
             throw new InvalidInputException("Document request is required");
         }
@@ -170,7 +180,7 @@ public class DocumentService {
     }
 
     private Document load(Long caregiverId, Long documentId) {
-        return documents.findByIdAndCaregiver_Id(documentId, caregiverId)
+        return documents.findByIdForUpdate(documentId, caregiverId)
                 .orElseThrow(() -> new NotFoundException(
                         "Document " + documentId + " not found for caregiver " + caregiverId));
     }

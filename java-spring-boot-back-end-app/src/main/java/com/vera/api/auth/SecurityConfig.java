@@ -21,6 +21,8 @@ import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.savedrequest.NullRequestCache;
 
+import jakarta.servlet.DispatcherType;
+
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
@@ -57,10 +59,31 @@ public class SecurityConfig {
         return http
                 .addFilterAfter(new SessionAccountFilter(users, errors), SecurityContextHolderFilter.class)
                 .authorizeHttpRequests(auth -> auth
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/me").permitAll()
-                        .requestMatchers("/error").permitAll()
-                        .anyRequest().authenticated())
+                        .requestMatchers(HttpMethod.GET, "/api/visits/mine").hasRole("CAREGIVER")
+                        .requestMatchers(HttpMethod.GET, "/api/visits", "/api/visits/counts",
+                                "/api/patients", "/api/patients/{id}", "/api/caregivers").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/visits/{id}", "/api/caregivers/{id}")
+                                .hasAnyRole("ADMIN", "CAREGIVER")
+                        .requestMatchers(HttpMethod.POST, "/api/visits", "/api/visits/{id}/claim",
+                                "/api/patients", "/api/caregivers").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/visits/{id}").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/visits/{id}", "/api/caregivers/{id}")
+                                .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/visits/{id}/check-in",
+                                "/api/visits/{id}/check-out", "/api/visits/{id}/evidence")
+                                .hasRole("CAREGIVER")
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/caregivers/{caregiverId}/documents/{documentId}/signature",
+                                "/api/caregivers/{caregiverId}/documents/{documentId}/submission")
+                                .hasRole("CAREGIVER")
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/caregivers/{caregiverId}/documents/{documentId}/file",
+                                "/api/caregivers/{caregiverId}/documents/{documentId}/submission/acceptance")
+                                .hasRole("ADMIN")
+                        .anyRequest().denyAll())
                 .csrf(csrf -> csrf.spa().csrfTokenRepository(tokens))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)

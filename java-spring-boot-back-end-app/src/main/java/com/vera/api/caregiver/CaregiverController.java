@@ -16,27 +16,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/caregivers")
 public class CaregiverController {
 
-    private final CaregiverRepository caregivers;
     private final CaregiverService caregiverService;
 
-    CaregiverController(CaregiverRepository caregivers, CaregiverService caregiverService) {
-        this.caregivers = caregivers;
+    CaregiverController(CaregiverService caregiverService) {
         this.caregiverService = caregiverService;
     }
 
     @GetMapping
     public List<CaregiverResponse> getCaregivers() {
-        return caregivers.findAllWithDocuments().stream()
+        return caregiverService.findAll().stream()
                 .map(CaregiverResponse::from)
                 .toList();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<CaregiverResponse> getCaregiverById(@PathVariable Long id) {
-        return caregivers.findByIdWithDocuments(id)
-                .map(CaregiverResponse::from)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(CaregiverResponse.from(caregiverService.findById(id)));
     }
 
     @PostMapping
