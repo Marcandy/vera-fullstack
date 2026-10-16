@@ -36,6 +36,10 @@ if ($Action -eq 'restore-check') {
     $backup = Resolve-PrivatePath $BackupDirectory
     if (!(Test-Path -LiteralPath (Join-Path $backup 'vera-demo.sql')) -or
         !(Test-Path -LiteralPath (Join-Path $backup 'counts.tsv'))) { throw 'Incomplete backup directory.' }
+    $expected = (Get-Content -LiteralPath (Join-Path $backup 'counts.tsv')) -join "`n"
+    if ($expected -notmatch '(?m)^data_sha256\t[0-9a-f]{64}$') {
+        throw 'Backup has no data checksum. Create a fresh export before verifying recovery.'
+    }
     $container = 'vera-restore-' + [Guid]::NewGuid().ToString('N').Substring(0, 12)
     $restoreEnv = Join-Path $backup 'restore.env'
     if (Test-Path -LiteralPath $restoreEnv) { throw 'A restore.env file already exists; check the previous restore operation.' }
@@ -56,9 +60,8 @@ if ($Action -eq 'restore-check') {
         if (!$ready) { throw 'Disposable restore database did not become ready.' }
         $restored = & docker exec $container sh /scripts/mysql-restore.sh
         if ($LASTEXITCODE -ne 0) { throw 'Database restore failed.' }
-        $expected = (Get-Content -LiteralPath (Join-Path $backup 'counts.tsv')) -join "`n"
-        if (($restored -join "`n").Trim() -ne $expected.Trim()) { throw 'Restored counts or relationship checks differ from the export.' }
-        Write-Output 'Restore verified: all table counts and relationship checks match the exported database.'
+        if (($restored -join "`n").Trim() -cne $expected.Trim()) { throw 'Restored data checksum, counts, or relationship checks differ from the export.' }
+        Write-Output 'Restore verified: all record values, table counts, and relationship checks match the exported database.'
     } finally {
         # This exact random name belongs only to the disposable container above.
         try { & docker rm -f $container 2>$null | Out-Null } catch { <# It may not have been created. #> }
