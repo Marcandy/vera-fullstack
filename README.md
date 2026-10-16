@@ -4,6 +4,9 @@ Vera is a workspace for small home care agencies: one place to manage visits, ca
 
 **Running the full stack is local**, and the steps are below. [vera-homecare.vercel.app](https://vera-homecare.vercel.app) is the Unit 1 front end deployed on its own: it runs on in-memory fixtures and does not reach this API.
 
+The full-stack Railway deployment, private demo credentials, verification, and
+recovery procedures are described in the [deployment runbook](docs/deployment.md).
+
 **Server access control is implemented.** Role checks, session revalidation,
 and ownership checks protect caregiver records and visit workflows. Caregivers
 can read and update their own records; office actions require an administrator.

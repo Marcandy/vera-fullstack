@@ -3,6 +3,10 @@
 Java 21, Spring Boot 4.1, Maven and MySQL. The REST API behind Vera's React
 front end, which reads it through a Vite proxy in development.
 
+For the combined React/API production image, Flyway migrations, and operator
+tools, follow the [deployment runbook](../docs/deployment.md). The `prod` profile
+uses the dedicated `vera_demo` schema and never runs the local startup seed.
+
 Open this folder rather than the repository root, so that Maven imports the
 project and the React app's `node_modules` stays out of the index.
 
