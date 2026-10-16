@@ -160,3 +160,9 @@ known-good deployment and commit identifiers, backup location, and current
 spending projection. Daily reset automation and a custom domain are the next
 release. Daily automation must coordinate writes, preserve accounts, invalidate
 old sessions, and catch up safely after missed runs.
+
+Migrate `railway.json` to Railway Infrastructure as Code before December 1, 2026.
+Railway's CLI 5.70 and [migration documentation](https://docs.railway.com/infrastructure-as-code#migrating-from-config-as-code)
+announce that existing JSON/TOML configuration stops being read on that date.
+Import with variable values preserved, review the plan, and keep the one-service
+limits and verified TLS settings. Never import decrypted secrets into source.
