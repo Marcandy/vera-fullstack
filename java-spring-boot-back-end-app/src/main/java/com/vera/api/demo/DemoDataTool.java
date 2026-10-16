@@ -81,7 +81,9 @@ public final class DemoDataTool {
                 ScriptUtils.executeSqlScript(connection, new ClassPathResource("demo/fixtures.sql"));
                 // Both caregiver accounts need a scheduled visit and a signature example.
                 execute(connection, "UPDATE documents SET signature=NULL,received_at=NULL "
-                        + "WHERE caregiver_id=1 AND name='Background Check'");
+                        + "WHERE caregiver_id IN (1,2) AND name='Background Check'");
+                execute(connection, "UPDATE documents SET expires_at=UTC_TIMESTAMP()+INTERVAL 18 DAY "
+                        + "WHERE caregiver_id=2 AND name='CPR Certification'");
                 execute(connection, "INSERT INTO visits (patient_id,caregiver_id,appointment_time,status,service_type,estimated_cost) "
                         + "VALUES (2,2,UTC_TIMESTAMP()+INTERVAL 30 MINUTE,'SCHEDULED','HOMEMAKER',40.00)");
                 execute(connection, "INSERT INTO visits (patient_id,caregiver_id,appointment_time,status,service_type,estimated_cost,"
