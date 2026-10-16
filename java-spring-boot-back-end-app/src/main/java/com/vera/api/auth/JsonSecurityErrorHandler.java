@@ -40,6 +40,8 @@ public class JsonSecurityErrorHandler implements AuthenticationEntryPoint, Acces
     private static void write(HttpServletResponse response, int status, String message)
             throws IOException {
         response.setStatus(status);
+        // Session revalidation can fail before Spring's header-writing filter runs.
+        response.setHeader("Cache-Control", "no-store");
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
         response.getWriter().write("{\"message\":\"" + message + "\"}");

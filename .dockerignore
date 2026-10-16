@@ -1,0 +1,20 @@
+# Allow only application inputs into the image, including on a developer machine.
+**
+!Dockerfile
+!docker/
+!docker/**
+!java-spring-boot-back-end-app/
+!java-spring-boot-back-end-app/pom.xml
+!java-spring-boot-back-end-app/src/
+!java-spring-boot-back-end-app/src/main/
+!java-spring-boot-back-end-app/src/main/**
+java-spring-boot-back-end-app/src/main/resources/data.sql
+!react-front-end-app/
+!react-front-end-app/package.json
+!react-front-end-app/package-lock.json
+!react-front-end-app/index.html
+!react-front-end-app/vite.config.js
+!react-front-end-app/src/
+!react-front-end-app/src/**
+!react-front-end-app/public/
+!react-front-end-app/public/**

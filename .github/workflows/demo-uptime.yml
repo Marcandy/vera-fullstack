@@ -1,0 +1,26 @@
+name: Demo uptime
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: demo-uptime
+  cancel-in-progress: true
+jobs:
+  health:
+    if: ${{ vars.VERA_DEMO_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      DEMO_URL: ${{ vars.VERA_DEMO_URL }}
+    steps:
+      - name: Check frontend and database readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$DEMO_URL" == https://* ]]
+          curl --fail --silent --show-error --max-time 20 --retry 2 "${DEMO_URL%/}/" > /tmp/vera-home.html
+          grep -q '<div id="root">' /tmp/vera-home.html
+          curl --fail --silent --show-error --max-time 25 --retry 2 "${DEMO_URL%/}/readyz" | jq -e '. == {"status":"UP"}'
