@@ -124,8 +124,10 @@ not a remote status check performed by the script.
 Exports are written to new timestamped private directories and never overwrite
 an existing backup. They include password hashes. The dump uses a consistent
 transaction and verified TLS. Restore-check starts a disposable MySQL 8.4
-container with no published port, restores the dump, compares table counts and
-relationship checks, and removes only that container. Keep the export afterward.
+container with no published port, restores the dump, compares table counts,
+relationships, and a SHA-256 checksum of every stored field (including account
+hashes and migration history), and removes only that container. Keep the export
+afterward. Older exports without a checksum need a fresh export for this check.
 
 Reset performs transactional DML, preserves existing accounts and hashes, clears
 fictional workflow data, and recreates current-time fixtures. Visits and documents

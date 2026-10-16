@@ -113,7 +113,7 @@ const claims = await Promise.all([admin.send(`/api/visits/${visit.id}/claim`, 'P
 check(claims.map(result => result.status).sort().join(',') === '200,409', 'concurrent claims create one billed result');
 for (const [client, user, other] of [[a, marcus, dana], [b, dana, marcus]]) {
     const record = (await client.send(`/api/caregivers/${user.caregiverId}`)).body;
-    const pending = record.documents.find(document => document.signature === null && document.fileName === null);
+    const pending = record.documents.find(document => document.name === 'Background Check' && document.signature === null && document.fileName === null);
     assert.ok(pending, 'Reset the demo before acceptance: a pending signature is needed');
     const path = `/api/caregivers/${user.caregiverId}/documents/${pending.id}`;
     check((await admin.send(`${path}/signature`, 'POST', {signature: 'Fictional Caregiver'})).status === 403, 'administrator cannot sign caregiver document');
@@ -125,8 +125,9 @@ for (const [client, user, other] of [[a, marcus, dana], [b, dana, marcus]]) {
         check((await otherClient.send(`${path}/${suffix}`, 'POST', {signature: 'forged', fileName: 'forged.pdf'})).status === 404, 'foreign document mutation is hidden');
     }
     assert.deepEqual((await admin.send(`/api/caregivers/${user.caregiverId}`)).body, snapshot);
-    const renewal = record.documents.find(document => document.fileName !== null);
-    assert.ok(renewal);
+    const renewal = record.documents.find(document => document.fileName !== null && document.expiresAt &&
+        new Date(document.expiresAt).getTime() <= Date.now() + 30 * 86400000);
+    assert.ok(renewal, 'Reset the demo before acceptance: a renewal visible in the caregiver UI is needed');
     const renewalPath = `/api/caregivers/${user.caregiverId}/documents/${renewal.id}/submission`;
     check((await client.send(renewalPath, 'POST', {fileName: 'fictional-renewal.pdf', fileSize: 123, fileType: 'application/pdf',
         expiresAt: new Date(Date.now() + 365 * 86400000).toISOString()})).status === 200, 'caregiver submits renewal metadata');

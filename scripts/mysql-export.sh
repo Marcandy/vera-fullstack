@@ -11,4 +11,7 @@ mysqldump --host="$MYSQL_HOST" --port="$MYSQL_PORT" --user="$MYSQL_USER" \
 mysql --host="$MYSQL_HOST" --port="$MYSQL_PORT" --user="$MYSQL_USER" \
     --ssl-mode=VERIFY_IDENTITY --ssl-ca=/tmp/vera-ca.pem --batch --skip-column-names \
     vera_demo < /scripts/counts.sql > /backup/counts.tsv
+checksum=$(sh /scripts/mysql-data-checksum.sh --host="$MYSQL_HOST" --port="$MYSQL_PORT" --user="$MYSQL_USER" \
+    --ssl-mode=VERIFY_IDENTITY --ssl-ca=/tmp/vera-ca.pem)
+printf 'data_sha256\t%s\n' "$checksum" >> /backup/counts.tsv
 echo 'Export complete. Password hashes are included; keep this directory private.'
