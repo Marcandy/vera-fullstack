@@ -11,8 +11,8 @@ project and the React app's `node_modules` stays out of the index.
 The [access policy](../docs/access-control.md) defines the role matrix. HTTP
 rules deny unlisted routes, and service methods enforce role permissions through
 `@PreAuthorize`. Individual caregiver records and visits use
-`CurrentUser.requireOwnership`, whose denying placeholder remains the pairing
-exercise for issue #8.
+`CurrentUser.requireOwnership`, which derives the caller's caregiver id from the
+session and compares ids by value. Null or foreign owners receive a generic 404.
 
 `SessionAccountFilter` checks current account access after Spring restores the
 saved security context. Deleted or disabled accounts, changed roles, and changed

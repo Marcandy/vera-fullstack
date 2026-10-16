@@ -4,10 +4,10 @@ Vera is a workspace for small home care agencies: one place to manage visits, ca
 
 **Running the full stack is local**, and the steps are below. [vera-homecare.vercel.app](https://vera-homecare.vercel.app) is the Unit 1 front end deployed on its own: it runs on in-memory fixtures and does not reach this API.
 
-**Issue #8 is in progress.** Role checks, session revalidation, and scoped reads
-are wired. The ownership comparison in `CurrentUser.requireOwnership` remains
-the pairing exercise. Its placeholder denies caregiver detail and evidence
-actions until completed. See the [access policy](docs/access-control.md).
+**Server access control is implemented.** Role checks, session revalidation,
+and ownership checks protect caregiver records and visit workflows. Caregivers
+can read and update their own records; office actions require an administrator.
+See the [access policy](docs/access-control.md).
 
 ## Why
 
@@ -204,7 +204,7 @@ Automated testing was out of scope for this phase, so testing is a scripted manu
 - Real document storage: the upload records a file's name, size and type, and a backend is what would hold the bytes
 - Per-document-type rules, so a CPR certification cannot be recorded without an expiry while a background check can
 - Drawn signature capture
-- Finish the ownership exercise and caregiver acceptance for issue #8, then deploy the full stack
+- Deploy the full stack with the server access controls from issue #8
 - Prescriptions and medication reconciliation on the patient record, under a future skilled-care path
 - Real claim submission and remittance (837 and 835) to a payer or clearinghouse, replacing the mock
 - Stripe test-mode collection for private-pay clients

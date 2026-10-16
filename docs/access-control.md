@@ -34,11 +34,13 @@ Document submissions remain metadata only; claims remain simulated.
    and the same generic 404 for missing or inaccessible records. Unsafe requests
    must also pass CSRF protection.
 
-## Pairing handoff
+## Ownership check
 
-The single remaining exercise is `CurrentUser.requireOwnership`. Its
-placeholder must deny access until the ownership comparison is implemented.
-Do not merge or deploy while this exercise remains unfinished.
+`CurrentUser.requireOwnership` derives the caller's caregiver id from the
+authenticated principal through `caregiverId()`. It rejects null or different
+owners with `NotFoundException("Record not found")` and returns normally for
+equal `Long` values. The helper requires a caregiver account; administrator
+read access is granted explicitly by the calling services.
 
 ## Acceptance
 
