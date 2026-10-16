@@ -65,6 +65,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.GET, "/readyz", "/livez").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/", "/index.html", "/favicon.svg", "/assets/**",
+                                "/about", "/dashboard", "/visits", "/visits/{id}", "/billing",
+                                "/caregivers", "/caregivers/{id}", "/patients", "/patients/{id}",
+                                "/my-visits", "/my-documents", "/caregiver/visits/{id}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/me").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/visits/mine").hasRole("CAREGIVER")
