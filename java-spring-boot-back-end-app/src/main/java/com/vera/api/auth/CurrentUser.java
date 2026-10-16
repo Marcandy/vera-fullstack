@@ -34,10 +34,9 @@ public class CurrentUser {
     }
 
     public void requireOwnership(Long ownerCaregiverId) {
-        // TODO 1: Derive the caller's caregiver id with caregiverId(), never request data.
-        // TODO 2: Reject a null owner or a different caregiver id with the generic 404 below.
-        // TODO 3: Return normally only for matching ids. Compare Long values, not references.
-        // Keep this denying placeholder until the comparison is implemented.
-        throw new NotFoundException("Record not found");
+        Long caregiverId = caregiverId();
+        if (ownerCaregiverId == null || !caregiverId.equals(ownerCaregiverId)) {
+            throw new NotFoundException("Record not found");
+        }
     }
 }
