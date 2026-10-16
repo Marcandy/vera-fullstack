@@ -1,0 +1,134 @@
+-- Operator-only fictional fixtures. Never executed during application startup.
+-- Times are UTC offsets from now, never literal dates, so the seed never goes stale.
+
+INSERT IGNORE INTO patients (id, name, phone, address, standing_concerns) VALUES
+(1,  'Eleanor Whitfield', '215-555-0231', '1642 S Broad St, Philadelphia, PA 19145',   'Unsteady on stairs after dark. Prefers help with bathing earlier in the day.'),
+(2,  'Samuel Okafor',     '215-555-0244', '5310 Chestnut St, Philadelphia, PA 19139',  'Appetite is inconsistent; meals need encouragement. Reminders for evening medication.'),
+(3,  'Rosa Delgado',      '215-555-0198', '2708 N 5th St, Philadelphia, PA 19133',     'Wants to keep walking daily while she can. Spanish is her first language.'),
+(4,  'Harold Brennan',    '215-555-0176', '812 Fitzwater St, Philadelphia, PA 19147',  'Knee replacement recovery. Physical therapy set is the priority every visit.'),
+(5,  'Miriam Katz',       '215-555-0159', '7401 Old York Rd, Elkins Park, PA 19027',   'Lives alone and values the company. Hard of hearing on the left side.'),
+(6,  'George Antonelli',  '215-555-0287', '1919 S 10th St, Philadelphia, PA 19148',    'Low vision. Labels and paperwork need reading aloud.'),
+(7,  'Pearl Jackson',     '215-555-0134', '4522 Baltimore Ave, Philadelphia, PA 19143','Daughter handles paperwork and often signs. Prefers a familiar caregiver.'),
+(8,  'Dorothy Chen',      '215-555-0265', '1030 Race St, Philadelphia, PA 19107',      'Wound care on the left forearm per care plan. Dressing changed each visit.'),
+(9,  'Walter Osei',       '215-555-0212', '6218 Chew Ave, Philadelphia, PA 19138',     'Diabetic. Watches blood sugar closely and wants meals kept on schedule.'),
+(10, 'Agnes Romano',      '215-555-0221', '2436 E Cumberland St, Philadelphia, PA 19125', 'Medication cabinet is disorganised and labels are too small for her to read.');
+
+INSERT IGNORE INTO caregivers (id, name, phone) VALUES
+(1, 'Marcus Reed',     '215-555-0142'),
+(2, 'Dana Alvarez',    '215-555-0187'),
+(3, 'Keisha Thompson', '215-555-0116'),
+(4, 'Luis Rivera',     '215-555-0163'),
+(5, 'Angela Brooks',   '215-555-0129');
+
+-- Rebuild the baseline document checklists during an explicit operator reset.
+DELETE FROM documents WHERE caregiver_id BETWEEN 1 AND 5;
+
+INSERT INTO documents
+    (caregiver_id, name, issued_at, expires_at, signature, file_name, file_size, file_type, received_at)
+VALUES
+(1, 'State ID',            TIMESTAMP(UTC_DATE() - INTERVAL 1100 DAY, '00:00:00'), TIMESTAMP(UTC_DATE() + INTERVAL 600 DAY, '23:59:00'), NULL,           'marcus-reed-state-id.jpg',     412336, 'image/jpeg',       TIMESTAMP(UTC_DATE() - INTERVAL 820 DAY, '09:12:00')),
+(1, 'Background Check',    TIMESTAMP(UTC_DATE() - INTERVAL 830 DAY, '00:00:00'),  NULL,                                                'Marcus Reed', NULL,                          NULL,   NULL,               TIMESTAMP(UTC_DATE() - INTERVAL 830 DAY, '14:40:00')),
+(1, 'CPR Certification',   TIMESTAMP(UTC_DATE() - INTERVAL 712 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 18 DAY, '23:59:00'),  NULL,           'marcus-cpr-card.pdf',          186204, 'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 710 DAY, '11:05:00')),
+(1, 'TB Test',             TIMESTAMP(UTC_DATE() - INTERVAL 250 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 115 DAY, '23:59:00'), NULL,           'marcus-tb-results.pdf',        94118,  'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 248 DAY, '16:20:00')),
+(2, 'State ID',            TIMESTAMP(UTC_DATE() - INTERVAL 600 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 900 DAY, '23:59:00'), NULL,           'dana-alvarez-state-id.jpg',    388910, 'image/jpeg',       TIMESTAMP(UTC_DATE() - INTERVAL 500 DAY, '10:02:00')),
+(2, 'Background Check',    TIMESTAMP(UTC_DATE() - INTERVAL 500 DAY, '00:00:00'),  NULL,                                                'Dana Alvarez',NULL,                          NULL,   NULL,               TIMESTAMP(UTC_DATE() - INTERVAL 500 DAY, '15:18:00')),
+(2, 'CPR Certification',   TIMESTAMP(UTC_DATE() - INTERVAL 300 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 430 DAY, '23:59:00'), NULL,           'dana-cpr-card.pdf',            201774, 'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 298 DAY, '09:44:00')),
+(2, 'TB Test',             NULL,                                                NULL,                                                NULL,           NULL,                          NULL,   NULL,               NULL),
+(3, 'State ID',            TIMESTAMP(UTC_DATE() - INTERVAL 900 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 800 DAY, '23:59:00'), NULL,           'keisha-thompson-state-id.jpg', 401552, 'image/jpeg',       TIMESTAMP(UTC_DATE() - INTERVAL 700 DAY, '08:35:00')),
+(3, 'Background Check',    TIMESTAMP(UTC_DATE() - INTERVAL 700 DAY, '00:00:00'),  NULL,                                                'Keisha Thompson', NULL,                      NULL,   NULL,               TIMESTAMP(UTC_DATE() - INTERVAL 700 DAY, '13:07:00')),
+(3, 'CPR Certification',   TIMESTAMP(UTC_DATE() - INTERVAL 400 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 330 DAY, '23:59:00'), NULL,           'keisha-cpr-card.pdf',          178640, 'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 395 DAY, '12:29:00')),
+(3, 'TB Test',             TIMESTAMP(UTC_DATE() - INTERVAL 120 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 245 DAY, '23:59:00'), NULL,           'keisha-tb-results.pdf',        88402,  'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 118 DAY, '17:11:00')),
+(4, 'State ID',            TIMESTAMP(UTC_DATE() - INTERVAL 200 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() + INTERVAL 1200 DAY, '23:59:00'),NULL,           'luis-rivera-state-id.jpg',     355017, 'image/jpeg',       TIMESTAMP(UTC_DATE() - INTERVAL 60 DAY, '11:52:00')),
+(4, 'Background Check',    NULL,                                                NULL,                                                NULL,           NULL,                          NULL,   NULL,               NULL),
+(4, 'CPR Certification',   NULL,                                                NULL,                                                NULL,           NULL,                          NULL,   NULL,               NULL),
+(4, 'TB Test',             NULL,                                                NULL,                                                NULL,           NULL,                          NULL,   NULL,               NULL),
+(5, 'State ID',            TIMESTAMP(UTC_DATE() - INTERVAL 1000 DAY, '00:00:00'), TIMESTAMP(UTC_DATE() + INTERVAL 400 DAY, '23:59:00'), NULL,           'angela-brooks-state-id.jpg',   397228, 'image/jpeg',       TIMESTAMP(UTC_DATE() - INTERVAL 900 DAY, '09:03:00')),
+(5, 'Background Check',    TIMESTAMP(UTC_DATE() - INTERVAL 900 DAY, '00:00:00'),  NULL,                                                'Angela Brooks',NULL,                          NULL,   NULL,               TIMESTAMP(UTC_DATE() - INTERVAL 900 DAY, '16:47:00')),
+(5, 'CPR Certification',   TIMESTAMP(UTC_DATE() - INTERVAL 742 DAY, '00:00:00'),  TIMESTAMP(UTC_DATE() - INTERVAL 12 DAY, '23:59:00'),  NULL,           'angela-cpr-card.pdf',          192845, 'application/pdf',  TIMESTAMP(UTC_DATE() - INTERVAL 740 DAY, '10:16:00')),
+(5, 'TB Test',             NULL,                                                NULL,                                                NULL,           NULL,                          NULL,   NULL,               NULL);
+
+-- Rebuilt only by the operator tool, with timestamps relative to reset time.
+DELETE FROM claims;
+DELETE FROM visits;
+
+-- Yesterday's work: two visits missing evidence, three ready to bill, one billed.
+INSERT INTO visits
+    (patient_id, caregiver_id, appointment_time, status, service_type, estimated_cost,
+     check_in_time, check_out_time, assessment, signature, patient_concern) VALUES
+
+(1, 1, TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '18:00:00'), 'NEEDS_REVIEW', 'PERSONAL_CARE', 34.00,
+ TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '18:02:00'), TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '19:01:00'),
+ 'Patient alert and in good spirits. Assisted with bathing and lunch. Mild swelling in left ankle, family notified.',
+ NULL,
+ 'Worried about managing the stairs alone at night; asked if evening visits could start earlier.'),
+
+(2, 2, TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '20:30:00'), 'NEEDS_REVIEW', 'HOMEMAKER', 51.00,
+ TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '20:33:00'), NULL,
+ 'Medication reminder completed. Prepared dinner, patient ate half portion.',
+ NULL, NULL),
+
+(3, 1, TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '13:00:00'), 'READY_TO_BILL', 'PERSONAL_CARE', 52.50,
+ TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '12:58:00'), TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '14:30:00'),
+ 'Morning routine assistance. Vitals stable, patient walked to mailbox and back without difficulty.',
+ 'Rosa Delgado',
+ 'Freezer stopped working and she is worried about meals for the weekend.'),
+
+(4, 3, TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '15:30:00'), 'READY_TO_BILL', 'PERSONAL_CARE', 56.00,
+ TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '15:29:00'), TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '17:05:00'),
+ 'Physical therapy exercises completed, full set. Patient reports less knee pain than last week.',
+ 'Harold Brennan', NULL),
+
+-- Happening now. Visit 5 is comfortably inside the two hour window; visit 9 has
+-- deliberately run past it, which is the only missing check-out flag on screen.
+(5, 1, UTC_TIMESTAMP() - INTERVAL 50 MINUTE, 'IN_PROGRESS', 'RESPITE_CARE', 42.00,
+ UTC_TIMESTAMP() - INTERVAL 45 MINUTE, NULL, NULL, NULL, NULL),
+
+-- Forty minutes past its appointment with no check-in, so this is the one late
+-- check-in. The grace period is fifteen minutes.
+(6, 1, UTC_TIMESTAMP() - INTERVAL 40 MINUTE, 'SCHEDULED', 'HOMEMAKER', 38.50,
+ NULL, NULL, NULL, NULL, NULL),
+
+(7, 1, TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '12:00:00'), 'BILLED', 'PERSONAL_CARE', 45.50,
+ TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '11:57:00'), TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '13:15:00'),
+ 'Overnight recap reviewed. Breakfast and morning medications administered on schedule.',
+ 'P. Jackson (daughter)',
+ 'Asked whether the same caregiver can come Fridays, prefers familiar faces.'),
+
+(8, 3, TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '14:00:00'), 'READY_TO_BILL', 'PERSONAL_CARE', 63.00,
+ TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '13:58:00'), TIMESTAMP(UTC_DATE() - INTERVAL 1 DAY, '15:45:00'),
+ 'Wound dressing changed per care plan. Range-of-motion exercises completed, patient tolerated well.',
+ 'Dorothy Chen', NULL),
+
+(9, 2, UTC_TIMESTAMP() - INTERVAL 195 MINUTE, 'IN_PROGRESS', 'COMPANION_CARE', 47.00,
+ UTC_TIMESTAMP() - INTERVAL 190 MINUTE, NULL, NULL, NULL, NULL),
+
+(10, 1, UTC_TIMESTAMP() + INTERVAL 120 MINUTE, 'SCHEDULED', 'PERSONAL_CARE', 40.00,
+ NULL, NULL, NULL, NULL,
+ 'Wants help reorganizing the medication cabinet; labels are too small to read.'),
+
+(1, 1, TIMESTAMP(UTC_DATE() - INTERVAL 15 DAY, '18:00:00'), 'BILLED', 'PERSONAL_CARE', 34.00,
+ TIMESTAMP(UTC_DATE() - INTERVAL 15 DAY, '17:58:00'), TIMESTAMP(UTC_DATE() - INTERVAL 15 DAY, '19:04:00'),
+ 'Bathing and lunch as usual. Ankle swelling unchanged from last week.',
+ 'Eleanor Whitfield', NULL),
+
+(1, 3, TIMESTAMP(UTC_DATE() - INTERVAL 8 DAY, '18:00:00'), 'BILLED', 'PERSONAL_CARE', 34.00,
+ TIMESTAMP(UTC_DATE() - INTERVAL 8 DAY, '18:05:00'), TIMESTAMP(UTC_DATE() - INTERVAL 8 DAY, '19:07:00'),
+ 'Covered for Marcus. Patient needed extra time on the stairs; no falls.',
+ 'Eleanor Whitfield',
+ 'Asked whether her regular caregiver would be back next week.'),
+
+(3, 1, TIMESTAMP(UTC_DATE() - INTERVAL 13 DAY, '13:00:00'), 'BILLED', 'PERSONAL_CARE', 52.50,
+ TIMESTAMP(UTC_DATE() - INTERVAL 13 DAY, '13:01:00'), TIMESTAMP(UTC_DATE() - INTERVAL 13 DAY, '14:33:00'),
+ 'Walked to the corner and back. Good spirits, no shortness of breath.',
+ 'Rosa Delgado', NULL),
+
+(4, 3, TIMESTAMP(UTC_DATE() - INTERVAL 9 DAY, '15:30:00'), 'BILLED', 'PERSONAL_CARE', 56.00,
+ TIMESTAMP(UTC_DATE() - INTERVAL 9 DAY, '15:31:00'), TIMESTAMP(UTC_DATE() - INTERVAL 9 DAY, '17:02:00'),
+ 'Full physical therapy set completed. Reports stiffness in the morning only.',
+ 'Harold Brennan', NULL);
+
+INSERT INTO claims (visit_id, reference, amount, submitted_at)
+SELECT id, CONCAT('clm_', UUID()), estimated_cost,
+       TIMESTAMPADD(MINUTE, 5, check_out_time)
+FROM visits
+WHERE status = 'BILLED';
