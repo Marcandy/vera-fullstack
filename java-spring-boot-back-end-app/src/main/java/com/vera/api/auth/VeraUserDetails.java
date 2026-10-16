@@ -70,7 +70,7 @@ public class VeraUserDetails implements UserDetails, CredentialsContainer {
 
     @Override
     public boolean isEnabled() {
-        return enabled;
+        return enabled && (role == Role.ADMIN || caregiverId != null);
     }
 
     // ProviderManager calls this after a successful sign-in, so the hash never

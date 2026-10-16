@@ -16,6 +16,7 @@ import Homepage from './pages/Homepage';
 import About from './pages/About';
 import MyVisits from './pages/MyVisits';
 import MyDocuments from './pages/MyDocuments';
+import { ROLES } from './utils/roles';
 
 
 function App() {
@@ -25,17 +26,19 @@ function App() {
             <Route path="/" element={<Homepage />} />
             <Route element={<Layout />}>
                 <Route path="/about" element={<About />} />
-                <Route element={<RequireAuth />}>
+                <Route element={<RequireAuth role={ROLES.ADMIN} />}>
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/visits" element={<Visits />} />
-                    <Route path="/my-visits" element={<MyVisits />} />
-                    <Route path="/my-documents" element={<MyDocuments />} />
                     <Route path="/visits/:visitId" element={<VisitDetail />} />
                     <Route path="/billing" element={<Billing />} />
                     <Route path="/caregivers" element={<Caregivers />} />
                     <Route path="/caregivers/:caregiverId" element={<CaregiverDetail />} />
                     <Route path="/patients" element={<Patients />} />
                     <Route path="/patients/:patientId" element={<PatientDetail />} />
+                </Route>
+                <Route element={<RequireAuth role={ROLES.CAREGIVER} />}>
+                    <Route path="/my-visits" element={<MyVisits />} />
+                    <Route path="/my-documents" element={<MyDocuments />} />
                     <Route path="/caregiver/visits/:visitId" element={<CaregiverVisit />} />
                 </Route>
                 <Route path="*" element={<NotFound />} />

@@ -35,6 +35,8 @@ public record VisitResponse(
         String signature,
         String claimId,
 
+        PatientContext patient,
+
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
         Instant submittedAt) {
 
@@ -56,7 +58,12 @@ public record VisitResponse(
                 visit.getPatientConcern(),
                 visit.getSignature(),
                 visit.getClaim() == null ? null : visit.getClaim().getReference(),
+                new PatientContext(visit.getPatient().getAddress(),
+                        visit.getPatient().getStandingConcerns()),
                 visit.getClaim() == null ? null : visit.getClaim().getSubmittedAt());
+    }
+
+    record PatientContext(String address, String standingConcerns) {
     }
 
     // NON_NULL stays on this record only: CaregiverVisit checks `visit[field] === null`,

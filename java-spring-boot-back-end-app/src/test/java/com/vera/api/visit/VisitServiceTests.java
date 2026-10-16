@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.util.Optional;
 
 import com.vera.api.IllegalTransitionException;
+import com.vera.api.auth.CurrentUser;
+import com.vera.api.caregiver.Caregiver;
 import com.vera.api.caregiver.CaregiverRepository;
 import com.vera.api.claim.ClaimRepository;
 import com.vera.api.patient.PatientRepository;
@@ -32,11 +34,13 @@ class VisitServiceTests {
         visit.setCheckInTime(CHECK_IN);
         visit.setCheckOutTime(CHECK_OUT);
         visit.setAssessment("Helped with meals");
+        visit.setCaregiver(mock(Caregiver.class));
 
         VisitRepository visits = mock(VisitRepository.class);
         when(visits.findByIdWithPeople(1L)).thenReturn(Optional.of(visit));
+        when(visits.findByIdForUpdate(1L)).thenReturn(Optional.of(visit));
         service = new VisitService(visits, mock(ClaimRepository.class),
-                mock(CaregiverRepository.class), mock(PatientRepository.class));
+                mock(CaregiverRepository.class), mock(PatientRepository.class), mock(CurrentUser.class));
     }
 
     @Test

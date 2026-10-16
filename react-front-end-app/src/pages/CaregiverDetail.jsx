@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router";
 import StatusPill from "../components/StatusPill";
-import SignatureField from "../components/SignatureField";
 import LoadError from "../components/LoadError";
-import { acceptDocumentSubmission, getCaregiverById, signDocument, uploadDocument } from "../services/caregiverService";
+import { acceptDocumentSubmission, getCaregiverById, uploadDocument } from "../services/caregiverService";
 import { getVisitsByCaregiver } from "../services/visitService";
 import { documentStatus, isClearedToWork, daysUntil, hasPendingSubmission, RENEWAL_WINDOW_DAYS } from "../utils/documents";
 import { DOCUMENT_STATUS } from "../utils/status";
@@ -49,9 +48,8 @@ const CaregiverDetail = () => {
 
     const now = useNow();
 
-    // One open form at a time, so the wrong row cannot be signed.
+    // One document form stays open at a time.
     const [openForm, setOpenForm] = useState(null);
-    const [signatureValue, setSignatureValue] = useState("");
     const [file, setFile] = useState(null);
     const [issuedOn, setIssuedOn] = useState("");
     const [expiresOn, setExpiresOn] = useState("");
@@ -60,7 +58,6 @@ const CaregiverDetail = () => {
 
     const closeForm = () => {
         setOpenForm(null);
-        setSignatureValue("");
         setFile(null);
         setIssuedOn("");
         setExpiresOn("");
@@ -71,20 +68,6 @@ const CaregiverDetail = () => {
         closeForm();
         setOpenForm({ documentId, mode });
     };
-
-    async function handleSign(documentId) {
-        setFormError(null);
-        setSubmitting(true);
-        try {
-            const updated = await signDocument(caregiverId, documentId, signatureValue);
-            setCaregiver(updated);
-            closeForm();
-        } catch (err) {
-            setFormError(err.message);
-        } finally {
-            setSubmitting(false);
-        }
-    }
 
     async function handleAccept(documentId) {
         setFormError(null);
@@ -163,7 +146,7 @@ const CaregiverDetail = () => {
                 {caregiver.documents.map((document) => {
                     const status = documentStatus(document, now);
                     const isOpen = openForm?.documentId === document.id;
-                    const canSign = status === DOCUMENT_STATUS.PENDING;
+                    const isPending = status === DOCUMENT_STATUS.PENDING;
                     const needsRenewal =
                         status === DOCUMENT_STATUS.EXPIRED || status === DOCUMENT_STATUS.EXPIRING;
                     const days = document.expiresAt ? daysUntil(document.expiresAt, now) : null;
@@ -246,16 +229,7 @@ const CaregiverDetail = () => {
                             )}
 
                             <div className={styles.rowActions}>
-                                {canSign && (
-                                    <button
-                                        type="button"
-                                        className={styles.secondaryButton}
-                                        onClick={() => openFormFor(document.id, "sign")}
-                                    >
-                                        Sign
-                                    </button>
-                                )}
-                                {(canSign || needsRenewal) && (
+                                {(isPending || needsRenewal) && (
                                     <button
                                         type="button"
                                         className={styles.secondaryButton}
@@ -265,31 +239,6 @@ const CaregiverDetail = () => {
                                     </button>
                                 )}
                             </div>
-
-                            {isOpen && openForm.mode === "sign" && (
-                                <div className={styles.form}>
-                                    <SignatureField
-                                        id={`sign-${document.id}`}
-                                        label={`Signature for ${document.name}`}
-                                        value={signatureValue}
-                                        onChange={setSignatureValue}
-                                    />
-                                    {formError && <p className={styles.errorNote}>{formError}</p>}
-                                    <div className={styles.formActions}>
-                                        <button
-                                            type="button"
-                                            className={styles.primaryButton}
-                                            onClick={() => handleSign(document.id)}
-                                            disabled={submitting}
-                                        >
-                                            {submitting ? "Capturing..." : "Capture signature"}
-                                        </button>
-                                        <button type="button" className={styles.cancelButton} onClick={closeForm}>
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
 
                             {isOpen && openForm.mode === "upload" && (
                                 <div className={styles.form}>

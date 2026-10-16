@@ -2,27 +2,49 @@ package com.vera.api.caregiver;
 
 import static com.vera.api.Inputs.blankToNull;
 
+import java.util.List;
+
 import com.vera.api.IllegalTransitionException;
 import com.vera.api.InvalidInputException;
 import com.vera.api.NotFoundException;
+import com.vera.api.auth.CurrentUser;
 import com.vera.api.user.UserAccountRepository;
 import com.vera.api.visit.VisitRepository;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@PreAuthorize("hasRole('ADMIN')")
 public class CaregiverService {
 
     private final CaregiverRepository caregivers;
     private final VisitRepository visits;
     private final UserAccountRepository users;
+    private final CurrentUser currentUser;
 
     CaregiverService(CaregiverRepository caregivers, VisitRepository visits,
-            UserAccountRepository users) {
+            UserAccountRepository users, CurrentUser currentUser) {
         this.caregivers = caregivers;
         this.visits = visits;
         this.users = users;
+        this.currentUser = currentUser;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Caregiver> findAll() {
+        return caregivers.findAllWithDocuments();
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'CAREGIVER')")
+    @Transactional(readOnly = true)
+    public Caregiver findById(Long id) {
+        if (!currentUser.isAdmin()) {
+            currentUser.requireOwnership(id);
+        }
+        return caregivers.findByIdWithDocuments(id)
+                .orElseThrow(() -> new NotFoundException("Record not found"));
     }
 
     @Transactional

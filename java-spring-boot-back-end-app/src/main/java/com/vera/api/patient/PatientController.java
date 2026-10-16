@@ -15,17 +15,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/patients")
 public class PatientController {
 
-    private final PatientRepository patients;
     private final PatientService patientService;
 
-    PatientController(PatientRepository patients, PatientService patientService) {
-        this.patients = patients;
+    PatientController(PatientService patientService) {
         this.patientService = patientService;
     }
 
     @GetMapping
     public List<PatientResponse> getPatients() {
-        return patients.findAll().stream()
+        return patientService.findAll().stream()
                 .map(PatientResponse::from)
                 .toList();
     }
@@ -33,10 +31,7 @@ public class PatientController {
     // 404, not an empty 200: the client renders not found differently from a failed request.
     @GetMapping("/{id}")
     public ResponseEntity<PatientResponse> getPatientById(@PathVariable Long id) {
-        return patients.findById(id)
-                .map(PatientResponse::from)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(PatientResponse.from(patientService.findById(id)));
     }
 
     @PostMapping

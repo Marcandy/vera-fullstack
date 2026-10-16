@@ -2,18 +2,34 @@ package com.vera.api.patient;
 
 import static com.vera.api.Inputs.blankToNull;
 
+import java.util.List;
+
 import com.vera.api.InvalidInputException;
+import com.vera.api.NotFoundException;
 
 import org.springframework.stereotype.Service;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@PreAuthorize("hasRole('ADMIN')")
 public class PatientService {
 
     private final PatientRepository patients;
 
     PatientService(PatientRepository patients) {
         this.patients = patients;
+    }
+
+    @Transactional(readOnly = true)
+    public List<Patient> findAll() {
+        return patients.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Patient findById(Long id) {
+        return patients.findById(id)
+                .orElseThrow(() -> new NotFoundException("Record not found"));
     }
 
     @Transactional

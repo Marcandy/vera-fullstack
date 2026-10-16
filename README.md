@@ -4,6 +4,11 @@ Vera is a workspace for small home care agencies: one place to manage visits, ca
 
 **Running the full stack is local**, and the steps are below. [vera-homecare.vercel.app](https://vera-homecare.vercel.app) is the Unit 1 front end deployed on its own: it runs on in-memory fixtures and does not reach this API.
 
+**Server access control is implemented.** Role checks, session revalidation,
+and ownership checks protect caregiver records and visit workflows. Caregivers
+can read and update their own records; office actions require an administrator.
+See the [access policy](docs/access-control.md).
+
 ## Why
 
 Small home care agencies mostly run on software that is broad, expensive, and disconnected. From interviews with agency owners in Philadelphia, their top pain points were managing caregiver onboarding documents, knowing when caregivers are actually with patients, and collecting patient signatures. Vera focuses on one clean, connected flow from scheduled visit to billable record, built caregiver-first, because caregivers are the bulk of the workforce and the source of every record the office depends on.
@@ -40,7 +45,7 @@ Open each half in its own IDE rather than opening this repository as a whole: th
 
 **For the caregiver (phone-width surface, one primary action per screen):**
 
-- My visits: today's assigned visits in the order they happen, then anything held waiting on evidence only this caregiver can supply, then earlier work. The screen gets the caregiver id from the session. Server-side role and ownership enforcement is tracked separately in issue #8.
+- My visits: today's assigned visits in the order they happen, then anything held waiting on evidence only this caregiver can supply, then earlier work. The API derives the caregiver id from the authenticated session through `/api/visits/mine`.
 - My documents: their own onboarding checklist, whether they are cleared to work and what is holding it, and how long is left on anything expiring. A caregiver can sign a document themselves or send in a renewal, which is how the real products work, but sending it in does not make it count: it waits for the office to check it, because the agency is what has to produce a valid credential at a survey and one that cleared itself is one nobody checked
 - Check in on arrival; the system stamps the time and records the device's location when the caregiver allows it. A refused or unreachable location is recorded as unavailable, with the reason, and never blocks the check-in
 - Check out with a visit assessment and the patient's typed signature. Checking out without a signature warns first, then flags the visit for review instead of blocking the caregiver from leaving
@@ -121,13 +126,19 @@ It serves on `http://localhost:5173` and proxies `/api` to the API, so the brows
 
 Sign in with `denise@agency.com` (administrator) or `marcus@agency.com` (caregiver) and the demo password, which is shared with reviewers rather than kept in the repository. Passwords are stored as bcrypt hashes, and the server holds the session in an HttpOnly cookie. Sessions expire after 30 idle minutes for administrators or 8 idle hours for caregivers.
 
+The server revalidates account access on each request. Disabled accounts or
+changed roles and caregiver links require a new sign-in. Database failures
+return a retryable error without clearing a valid session. Caregivers produce
+visit evidence and their own document signatures; administrators manage records,
+accept document submissions, and submit simulated claims.
+
 ## Manual testing
 
 Automated testing was out of scope for this phase, so testing is a scripted manual pass run before each merge:
 
 | Scenario | Steps | Expected |
 |---|---|---|
-| Check-in | Open a scheduled visit's caregiver flow, tap Check In | Status moves to in progress everywhere; time recorded |
+| Check-in | Sign in as the caregiver, open a scheduled visit from My visits, tap Check In | Status moves to in progress everywhere; time recorded |
 | Check-in, location allowed | Allow the browser's location prompt | Coordinates and accuracy recorded; caregiver flow and visit detail both show them |
 | Check-in, location refused | Block or dismiss the location prompt | Check-in still succeeds; both surfaces read Unavailable with the reason, never a placeholder position |
 | Check-out, full evidence | Fill assessment and signature, check out | Visit becomes ready to bill; Billing total increases |
@@ -153,7 +164,7 @@ Automated testing was out of scope for this phase, so testing is a scripted manu
 | Held visit reaches its owner | Check out a visit with no signature, return to My visits | It leaves Today and appears under Waiting on you, which is the only place it can be cleared from |
 | Where am I going | Open a visit from My visits | The patient's address and what they need help with in general, before the check-in button |
 | Wrong password or unknown account | Sign in with a wrong password, then with any other email | The same message both times, so the form never reveals which emails have accounts |
-| Signed-out link | Sign out, then open `/visits/3` | Sent to sign in; after signing in, lands on visit 3 |
+| Signed-out link | Sign out, then open `/visits/3` | Sent to sign in; after signing in as an administrator, lands on visit 3 |
 | Session persistence | Sign in, then reload the page | Still signed in, same role, with no flash of the signed-out view |
 | Sign out | Use the banner control | Returns to the home page; reloading does not restore the session |
 | Sign-out fails | Make the sign-out request fail | Error shown; the user stays signed in and can retry |
@@ -163,7 +174,7 @@ Automated testing was out of scope for this phase, so testing is a scripted manu
 | Caregiver sends a renewal | Send in a file for an expiring document | Status does not change; the row says the office still has to check it, and the action disappears while one is pending |
 | Office is told to look | Sign in as the admin | The dashboard lists it as needing their check, naming who sent it |
 | Accepting promotes it | Open that caregiver and accept the renewal | The new expiry becomes the record and the submission clears |
-| Sign document | Open a caregiver, sign an outstanding document | Signature renders in cursive; pill flips to signed; badge flips to cleared when it was the last thing blocking |
+| Sign document | Sign in as the caregiver, open My documents, sign an outstanding document | Signature renders in cursive; pill flips to signed; badge flips to cleared when it was the last thing blocking |
 | Expiring document | Open Marcus Reed | CPR reads expiring with days remaining, and he is still cleared to work: valid today is not the same as outstanding |
 | Expired document | Open Angela Brooks | CPR reads expired and names itself as what blocks clearance; the row offers Record renewal and no Sign button |
 | Expired is not signable | Try to sign a lapsed document | Refused by the service: a signature does not renew a credential |
@@ -193,7 +204,7 @@ Automated testing was out of scope for this phase, so testing is a scripted manu
 - Real document storage: the upload records a file's name, size and type, and a backend is what would hold the bytes
 - Per-document-type rules, so a CPR certification cannot be recorded without an expiry while a background check can
 - Drawn signature capture
-- Authorization by role and caregiver ownership on the server, so being signed in is not enough to call an administrator's endpoint or read another caregiver's records
+- Deploy the full stack with the server access controls from issue #8
 - Prescriptions and medication reconciliation on the patient record, under a future skilled-care path
 - Real claim submission and remittance (837 and 835) to a payer or clearinghouse, replacing the mock
 - Stripe test-mode collection for private-pay clients

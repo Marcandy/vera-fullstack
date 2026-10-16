@@ -26,19 +26,6 @@
     color: var(--vera-primary-dark);
 }
 
-/* demo affordance: stands in for Marcus opening his own app */
-.caregiverFlowLink {
-    margin-left: auto;
-    color: var(--vera-secondary-dark);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
-.caregiverFlowLink:hover {
-    text-decoration: underline;
-}
-
 .card {
     background-color: var(--card-bg);
     border: 1px solid var(--border);
