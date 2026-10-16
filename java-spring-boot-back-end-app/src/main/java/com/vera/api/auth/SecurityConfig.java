@@ -2,6 +2,7 @@ package com.vera.api.auth;
 
 import com.vera.api.user.UserAccountRepository;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -42,8 +43,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    CookieCsrfTokenRepository csrfTokenRepository() {
-        return CookieCsrfTokenRepository.withHttpOnlyFalse();
+    CookieCsrfTokenRepository csrfTokenRepository(
+            @Value("${server.servlet.session.cookie.secure:false}") boolean secure) {
+        CookieCsrfTokenRepository tokens = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        tokens.setCookieCustomizer(cookie -> cookie.secure(secure).sameSite("Lax").path("/"));
+        return tokens;
     }
 
     @Bean
@@ -60,6 +64,7 @@ public class SecurityConfig {
                 .addFilterAfter(new SessionAccountFilter(users, errors), SecurityContextHolderFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/readyz", "/livez").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/me").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/visits/mine").hasRole("CAREGIVER")
