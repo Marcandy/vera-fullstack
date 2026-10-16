@@ -34,8 +34,11 @@ final class SessionAccountFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
+        // Static pages and liveness must remain available during a database outage.
+        // All account-bearing API reads still revalidate, including /api/auth/me.
         // Signing in can replace an obsolete session; signing out needs no database.
-        return path.equals("/api/auth/login") || path.equals("/api/auth/logout");
+        return !path.startsWith("/api/")
+                || path.equals("/api/auth/login") || path.equals("/api/auth/logout");
     }
 
     @Override
