@@ -39,6 +39,14 @@ dedicated demo schema may be used by the operator tools.
 `JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m`. Set the service memory limit to 1 GB and
 keep one replica. The configured database pool has at most five connections.
 
+Railway no longer loads JSON/TOML configuration for newly created services.
+For this launch, `railway.json` records the intended settings; apply them through
+the dashboard or Railway API: repository-root Dockerfile, one replica, no sleep,
+`/readyz` with a 300-second timeout, restart on failure with three retries, zero
+overlap, and 30-second draining. Confirm these values before deploying and set
+the replica limits to 1 GB memory and one vCPU. Move these settings to Railway
+Infrastructure as Code in the next release.
+
 ## First launch
 
 1. Create Railway Hobby and Aiven Developer accounts. Set Railway's compute
@@ -48,8 +56,10 @@ keep one replica. The configured database pool has at most five connections.
 2. Create Aiven MySQL and `vera_demo`. Check its assigned region, then choose
    the closest available Railway region. Confirm actual database latency during
    acceptance; the Developer tier does not guarantee region selection.
-3. Connect Railway to the repository's merged `main`, with the repository root
-   as the build context. Use the checked-in Dockerfile and Railway configuration.
+3. Install the official Railway GitHub App with access limited to this repository.
+   Connect Railway to the repository's merged `main`, with the repository root
+   as the build context. Verify automatic deployment is enabled. Use the checked-in
+   Dockerfile and apply the service settings above.
    Disable PR environments and application sleep. Supply the five variables
    above, then generate a Railway domain and verify HTTPS.
 4. Confirm `/livez` and `/readyz` return only `{"status":"UP"}`. Readiness includes
